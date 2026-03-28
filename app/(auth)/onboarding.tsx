@@ -102,7 +102,7 @@ export default function OnboardingScreen() {
 
   const onNext = () => {
     if (activeIndex === STEPS.length - 1) {
-      router.replace('/(auth)/sign-up')
+      router.navigate('/(auth)/sign-up')
       return
     }
 
@@ -129,7 +129,7 @@ export default function OnboardingScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <Pressable style={styles.skipButton} onPress={() => router.replace('/(auth)/sign-up')}>
+      <Pressable style={styles.skipButton} onPress={() => router.navigate('/(auth)/sign-up')}>
         <Text style={styles.skipText}>Skip</Text>
       </Pressable>
 

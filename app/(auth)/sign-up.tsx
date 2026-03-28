@@ -79,6 +79,15 @@ export default function SignUpScreen() {
   const router = useRouter()
   const { signIn, signUp } = useAuth()
 
+  const onBackPress = () => {
+    if (router.canGoBack()) {
+      router.back()
+      return
+    }
+
+    router.navigate('/(auth)/onboarding')
+  }
+
   const [fullName, setFullName] = useState('')
   const [phoneNumber, setPhoneNumber] = useState('')
   const [email, setEmail] = useState('')
@@ -176,7 +185,7 @@ export default function SignUpScreen() {
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-          <Pressable style={styles.backButton} onPress={() => router.back()}>
+          <Pressable style={styles.backButton} onPress={onBackPress}>
             <MaterialIcons name="arrow-back" size={24} color={Colors.onSurface} />
           </Pressable>
 
