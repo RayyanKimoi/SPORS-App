@@ -1,12 +1,10 @@
 import { useMemo, useState } from 'react'
 import {
   FlatList,
-  Modal,
   Pressable,
   RefreshControl,
   StyleSheet,
   Text,
-  TextInput,
   View,
 } from 'react-native'
 import MaterialIcons from '@expo/vector-icons/MaterialIcons'
@@ -19,34 +17,14 @@ import { Skeleton } from '../../components/ui/Skeleton'
 import { Toast } from '../../components/ui/Toast'
 import { Colors } from '../../constants/colors'
 import { FontFamily } from '../../constants/typography'
-import { isValidIMEI, registerDevice, useDevices } from '../../hooks/useDevices'
+import { useDevices } from '../../hooks/useDevices'
 import { useAuth } from '../../hooks/useAuth'
-
-type FormState = {
-  make: string
-  model: string
-  imei_primary: string
-  serial_number: string
-  color: string
-}
-
-const initialForm: FormState = {
-  make: '',
-  model: '',
-  imei_primary: '',
-  serial_number: '',
-  color: '',
-}
 
 export default function DevicesScreen() {
   const router = useRouter()
   const { profile } = useAuth()
   const { devices, loading, error, refetch } = useDevices()
 
-  const [sheetVisible, setSheetVisible] = useState(false)
-  const [form, setForm] = useState<FormState>(initialForm)
-  const [submitting, setSubmitting] = useState(false)
-  const [sheetError, setSheetError] = useState<string | null>(null)
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(
     null
   )
@@ -60,45 +38,6 @@ export default function DevicesScreen() {
       .map((part) => part[0]?.toUpperCase() ?? '')
       .join('')
   }, [profile?.full_name])
-
-  const onCloseSheet = () => {
-    setSheetVisible(false)
-    setForm(initialForm)
-    setSheetError(null)
-  }
-
-  const onSubmit = async () => {
-    if (!form.make.trim() || !form.model.trim() || !form.serial_number.trim()) {
-      setSheetError('Make, Model and Serial Number are required.')
-      return
-    }
-
-    if (!isValidIMEI(form.imei_primary)) {
-      setSheetError('Primary IMEI must be valid (15 digits).')
-      return
-    }
-
-    setSubmitting(true)
-    setSheetError(null)
-
-    try {
-      await registerDevice({
-        make: form.make,
-        model: form.model,
-        imei_primary: form.imei_primary,
-        serial_number: form.serial_number,
-        color: form.color || null,
-      })
-
-      onCloseSheet()
-      await refetch()
-      setToast({ message: 'Device registered successfully', type: 'success' })
-    } catch (submitError) {
-      setSheetError(submitError instanceof Error ? submitError.message : 'Unable to register device.')
-    } finally {
-      setSubmitting(false)
-    }
-  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -123,7 +62,7 @@ export default function DevicesScreen() {
       <View style={styles.topBar}>
         <Text style={styles.title}>My Devices</Text>
         <View style={styles.topBarButtonWrap}>
-          <GradientButton title="+ Register Device" onPress={() => setSheetVisible(true)} />
+          <GradientButton title="+ Register Device" onPress={() => router.push('/device/add')} />
         </View>
       </View>
 
@@ -177,61 +116,6 @@ export default function DevicesScreen() {
       />
 
       {!loading && error ? <ErrorState message={error} onRetry={() => void refetch()} /> : null}
-
-      <Modal visible={sheetVisible} transparent animationType="slide" onRequestClose={onCloseSheet}>
-        <View style={styles.modalBackdrop}>
-          <View style={styles.sheet}>
-            <View style={styles.sheetHandle} />
-            <Text style={styles.sheetTitle}>Register Device</Text>
-
-            <TextInput
-              value={form.make}
-              onChangeText={(value) => setForm((current) => ({ ...current, make: value }))}
-              style={styles.input}
-              placeholder="Make"
-              placeholderTextColor={Colors.outline}
-            />
-            <TextInput
-              value={form.model}
-              onChangeText={(value) => setForm((current) => ({ ...current, model: value }))}
-              style={styles.input}
-              placeholder="Model"
-              placeholderTextColor={Colors.outline}
-            />
-            <TextInput
-              value={form.imei_primary}
-              onChangeText={(value) =>
-                setForm((current) => ({ ...current, imei_primary: value.replace(/\D/g, '').slice(0, 15) }))
-              }
-              style={styles.input}
-              keyboardType="number-pad"
-              placeholder="Primary IMEI (15 digits)"
-              placeholderTextColor={Colors.outline}
-            />
-            <TextInput
-              value={form.serial_number}
-              onChangeText={(value) => setForm((current) => ({ ...current, serial_number: value }))}
-              style={styles.input}
-              placeholder="Serial Number"
-              placeholderTextColor={Colors.outline}
-            />
-            <TextInput
-              value={form.color}
-              onChangeText={(value) => setForm((current) => ({ ...current, color: value }))}
-              style={styles.input}
-              placeholder="Color (optional)"
-              placeholderTextColor={Colors.outline}
-            />
-
-            {sheetError ? <Text style={styles.errorText}>{sheetError}</Text> : null}
-
-            <GradientButton title="Register Device" onPress={() => void onSubmit()} loading={submitting} />
-            <Pressable onPress={onCloseSheet}>
-              <Text style={styles.cancelText}>Cancel</Text>
-            </Pressable>
-          </View>
-        </View>
-      </Modal>
 
     </SafeAreaView>
   )
@@ -357,55 +241,5 @@ const styles = StyleSheet.create({
     color: Colors.onSurfaceVariant,
     fontFamily: FontFamily.bodyRegular,
     fontSize: 16,
-  },
-  errorText: {
-    color: Colors.error,
-    fontFamily: FontFamily.bodyRegular,
-    fontSize: 13,
-    paddingHorizontal: 24,
-    marginTop: 4,
-  },
-  modalBackdrop: {
-    flex: 1,
-    justifyContent: 'flex-end',
-    backgroundColor: 'rgba(0,0,0,0.45)',
-  },
-  sheet: {
-    backgroundColor: Colors.surfaceContainerLow,
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    paddingHorizontal: 20,
-    paddingBottom: 24,
-    paddingTop: 12,
-    gap: 12,
-  },
-  sheetHandle: {
-    width: 50,
-    height: 5,
-    borderRadius: 5,
-    alignSelf: 'center',
-    backgroundColor: Colors.outlineVariant,
-  },
-  sheetTitle: {
-    color: Colors.onSurface,
-    fontFamily: FontFamily.headingSemiBold,
-    fontSize: 20,
-  },
-  input: {
-    height: 52,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: Colors.outlineVariant,
-    backgroundColor: Colors.surfaceContainerLowest,
-    color: Colors.onSurface,
-    paddingHorizontal: 14,
-    fontFamily: FontFamily.bodyRegular,
-    fontSize: 15,
-  },
-  cancelText: {
-    textAlign: 'center',
-    color: Colors.onSurfaceVariant,
-    fontFamily: FontFamily.bodyMedium,
-    fontSize: 14,
   },
 })

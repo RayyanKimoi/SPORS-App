@@ -12,6 +12,7 @@ import {
 import MaterialIcons from '@expo/vector-icons/MaterialIcons'
 import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker'
 import { useRouter } from 'expo-router'
+import RNPickerSelect from 'react-native-picker-select'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 import { GradientButton } from '../../components/ui/GradientButton'
@@ -20,6 +21,21 @@ import { FontFamily } from '../../constants/typography'
 import { isValidIMEI, registerDevice } from '../../hooks/useDevices'
 
 const MAKE_OPTIONS = ['Samsung', 'Apple', 'OnePlus', 'Xiaomi', 'Other'] as const
+const indiaStatesByCode = require('india-state-list/states.json') as Record<string, string>
+const INDIA_STATE_OPTIONS = Object.entries(indiaStatesByCode)
+  .map(([key, value]) => {
+    if (key.length === 2 && value.length > 2) {
+      return { label: value.trim(), value: key }
+    }
+
+    if (value.length === 2 && key.length > 2) {
+      return { label: key.trim(), value }
+    }
+
+    return null
+  })
+  .filter((item): item is { label: string; value: string } => item !== null)
+  .sort((a, b) => a.label.localeCompare(b.label))
 
 function formatDate(date: Date) {
   return date.toISOString().slice(0, 10)
@@ -34,6 +50,7 @@ export default function AddDeviceScreen() {
   const [imeiSecondary, setImeiSecondary] = useState('')
   const [serialNumber, setSerialNumber] = useState('')
   const [color, setColor] = useState('')
+  const [stateCode, setStateCode] = useState('')
   const [purchaseDate, setPurchaseDate] = useState<Date | null>(null)
 
   const [showMakeModal, setShowMakeModal] = useState(false)
@@ -173,6 +190,17 @@ export default function AddDeviceScreen() {
           onChangeText={setColor}
           placeholder="Color (optional)"
           placeholderTextColor={Colors.outline}
+        />
+
+        <Text style={styles.label}>State</Text>
+        <RNPickerSelect
+          value={stateCode || null}
+          onValueChange={(value) => setStateCode(typeof value === 'string' ? value : '')}
+          items={INDIA_STATE_OPTIONS}
+          placeholder={{ label: 'Select state', value: null, color: Colors.outline }}
+          useNativeAndroidPickerStyle={false}
+          Icon={() => <MaterialIcons name="expand-more" size={20} color={Colors.onSurfaceVariant} />}
+          style={pickerSelectStyles}
         />
 
         <Text style={styles.label}>Purchase Date</Text>
@@ -349,5 +377,41 @@ const styles = StyleSheet.create({
     fontFamily: FontFamily.bodyMedium,
     fontSize: 14,
     marginTop: 10,
+  },
+})
+
+const pickerSelectStyles = StyleSheet.create({
+  inputIOS: {
+    height: 52,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: Colors.outlineVariant,
+    backgroundColor: Colors.surfaceContainerLowest,
+    color: Colors.onSurface,
+    fontFamily: FontFamily.bodyRegular,
+    fontSize: 15,
+    paddingHorizontal: 14,
+    paddingRight: 36,
+  },
+  inputAndroid: {
+    height: 52,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: Colors.outlineVariant,
+    backgroundColor: Colors.surfaceContainerLowest,
+    color: Colors.onSurface,
+    fontFamily: FontFamily.bodyRegular,
+    fontSize: 15,
+    paddingHorizontal: 14,
+    paddingRight: 36,
+  },
+  iconContainer: {
+    top: 16,
+    right: 12,
+  },
+  placeholder: {
+    color: Colors.outline,
+    fontFamily: FontFamily.bodyRegular,
+    fontSize: 15,
   },
 })
