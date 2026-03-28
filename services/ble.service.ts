@@ -11,6 +11,8 @@ const BLE_DEVICE_UUID_STORAGE_KEY = 'spors_ble_device_uuid'
 const BASE64_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
 const REPORT_COOLDOWN_MS = 30000
 const reportCooldown = new Map<string, number>()
+const VALID_SERVICE_UUID_RE = /^([0-9a-f]{4}|[0-9a-f]{8}|[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i
+const scanServiceUuids = VALID_SERVICE_UUID_RE.test(APP_SERVICE_UUID) ? [APP_SERVICE_UUID] : null
 
 function encodeBase64Ascii(value: string) {
   let output = ''
@@ -128,14 +130,12 @@ class BLEService {
         const requested = await PermissionsAndroid.requestMultiple([
           PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN,
           PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT,
-          PermissionsAndroid.PERMISSIONS.BLUETOOTH_ADVERTISE,
           PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
         ])
 
         bluetoothGranted =
           requested[PermissionsAndroid.PERMISSIONS.BLUETOOTH_SCAN] === PermissionsAndroid.RESULTS.GRANTED &&
           requested[PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT] === PermissionsAndroid.RESULTS.GRANTED &&
-          requested[PermissionsAndroid.PERMISSIONS.BLUETOOTH_ADVERTISE] === PermissionsAndroid.RESULTS.GRANTED &&
           requested[PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION] === PermissionsAndroid.RESULTS.GRANTED
       } else {
         const fine = await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION)
@@ -144,6 +144,26 @@ class BLEService {
     }
 
     return locationPermission.status === 'granted' && bluetoothGranted
+  }
+
+  async requestBroadcastPermissions() {
+    if (Platform.OS !== 'android') {
+      return true
+    }
+
+    if (Platform.Version < 31) {
+      return true
+    }
+
+    const requested = await PermissionsAndroid.requestMultiple([
+      PermissionsAndroid.PERMISSIONS.BLUETOOTH_ADVERTISE,
+      PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT,
+    ])
+
+    return (
+      requested[PermissionsAndroid.PERMISSIONS.BLUETOOTH_ADVERTISE] === PermissionsAndroid.RESULTS.GRANTED &&
+      requested[PermissionsAndroid.PERMISSIONS.BLUETOOTH_CONNECT] === PermissionsAndroid.RESULTS.GRANTED
+    )
   }
 
   async setStoredBleDeviceUuid(bleDeviceUuid: string) {
@@ -186,7 +206,7 @@ class BLEService {
       return
     }
 
-    this.manager.startDeviceScan([APP_SERVICE_UUID], { allowDuplicates: false }, (error, device) => {
+    this.manager.startDeviceScan(scanServiceUuids, { allowDuplicates: false }, (error, device) => {
       if (error || !device) {
         if (error) {
           console.log('BLE scan error. Switching to simulation mode.')
@@ -239,6 +259,11 @@ class BLEService {
 
   async startBroadcast(beaconId: string) {
     this.stopBroadcast()
+    const broadcastGranted = await this.requestBroadcastPermissions()
+    if (!broadcastGranted) {
+      throw new Error('Bluetooth advertise permission is required to broadcast lost device beacon.')
+    }
+
     await this.updateBroadcastManufacturerData(beaconId)
 
     const manufacturerDataBase64 = this.broadcastManufacturerData ?? ''
@@ -370,6 +395,10 @@ class BLEService {
 
       const uuidMatchedDevice = (uuidRows?.[0] as DeviceRow | undefined) ?? null
       if (uuidMatchedDevice?.id) {
+        if (uuidMatchedDevice.status !== 'lost') {
+          return
+        }
+
         await this.reportLocationForDevice(uuidMatchedDevice.id, rssi)
         const updatedAt = Date.now()
         reportKeys.forEach((key) => reportCooldown.set(key, updatedAt))
@@ -387,6 +416,10 @@ class BLEService {
 
     const matchedDevice = (deviceRows?.[0] as DeviceRow | undefined) ?? null
     if (!matchedDevice?.id) {
+      return
+    }
+
+    if (matchedDevice.status !== 'lost') {
       return
     }
 

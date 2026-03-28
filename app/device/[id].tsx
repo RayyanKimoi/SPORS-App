@@ -195,9 +195,27 @@ export default function DeviceDetailScreen() {
         last_known_lng: device.last_seen_lng,
       })
 
-      if (device.ble_device_uuid) {
-        await bleService.setStoredBleDeviceUuid(device.ble_device_uuid)
-        await bleService.startBroadcast(device.ble_device_uuid)
+      let bleDeviceUuid = device.ble_device_uuid
+      if (!bleDeviceUuid) {
+        for (let attempt = 0; attempt < 8; attempt += 1) {
+          const { data: nextRow } = await supabase
+            .from('devices')
+            .select('ble_device_uuid')
+            .eq('id', device.id)
+            .maybeSingle()
+
+          bleDeviceUuid = (nextRow as { ble_device_uuid?: string | null } | null)?.ble_device_uuid ?? null
+          if (bleDeviceUuid) {
+            break
+          }
+
+          await new Promise((resolve) => setTimeout(resolve, 1000))
+        }
+      }
+
+      if (bleDeviceUuid) {
+        await bleService.setStoredBleDeviceUuid(bleDeviceUuid)
+        await bleService.startBroadcast(bleDeviceUuid)
       }
 
       setLostModal(false)

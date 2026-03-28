@@ -25,6 +25,7 @@ import { supabase } from '../../lib/supabase'
 type DetectedDevice = {
   beaconId: string
   rssi: number
+  distanceMeters: number | null
   deviceId: string | null
   ownerId: string | null
   make: string | null
@@ -49,6 +50,22 @@ function signalBarsFromRssi(rssi: number) {
     return 2
   }
   return 1
+}
+
+function estimateDistanceMeters(rssi: number) {
+  if (!Number.isFinite(rssi)) {
+    return null
+  }
+
+  const txPower = -59
+  const pathLossExponent = 2.2
+  const meters = Math.pow(10, (txPower - rssi) / (10 * pathLossExponent))
+
+  if (!Number.isFinite(meters) || meters <= 0) {
+    return null
+  }
+
+  return Number(meters.toFixed(1))
 }
 
 export default function ScannerScreen() {
@@ -110,6 +127,7 @@ export default function ScannerScreen() {
         const { data } = await supabase
           .from('devices')
           .select('id, owner_id, make, model, status, ble_beacon_id')
+          .eq('status', 'lost')
           .eq('ble_device_uuid', beaconId.toLowerCase())
           .limit(1)
 
@@ -131,6 +149,7 @@ export default function ScannerScreen() {
         const { data } = await supabase
           .from('devices')
           .select('id, owner_id, make, model, status, ble_beacon_id')
+          .eq('status', 'lost')
           .in('ble_beacon_id', identifierCandidates)
           .limit(1)
 
@@ -146,16 +165,21 @@ export default function ScannerScreen() {
           | undefined
       }
 
+      if (!matched) {
+        return
+      }
+
       const normalizedBeacon = beaconId.replace(/^SPORS-/i, '').trim()
       const finalBeaconId = matched?.ble_beacon_id || normalizedBeacon || beaconId
       const nextDevice: DetectedDevice = {
         beaconId: finalBeaconId,
         rssi,
+        distanceMeters: estimateDistanceMeters(rssi),
         deviceId: matched?.id ?? null,
         ownerId: matched?.owner_id ?? null,
         make: matched?.make ?? null,
         model: matched?.model ?? null,
-        status: matched?.status ?? 'unknown',
+        status: matched?.status ?? 'lost',
         seenAt: new Date().toISOString(),
       }
 
@@ -170,6 +194,29 @@ export default function ScannerScreen() {
     },
     []
   )
+
+  const ensureAutoScanForLostDevices = useCallback(async () => {
+    const { count, error } = await supabase
+      .from('devices')
+      .select('id', { count: 'exact', head: true })
+      .eq('status', 'lost')
+
+    if (error) {
+      return
+    }
+
+    const hasLostDevices = (count ?? 0) > 0
+    if (hasLostDevices && !isScanning) {
+      try {
+        await bleService.scanForSPORSDevices((beaconId, rssi) => {
+          void upsertDetectedDevice(beaconId, rssi)
+        })
+        setIsScanning(true)
+      } catch {
+        setIsScanning(false)
+      }
+    }
+  }, [isScanning, upsertDetectedDevice])
 
   const startScanning = useCallback(async () => {
     try {
@@ -198,11 +245,24 @@ export default function ScannerScreen() {
   }, [isScanning, startScanning, stopScanning])
 
   useEffect(() => {
-    void startScanning()
+    void ensureAutoScanForLostDevices()
+
+    const channel = supabase
+      .channel('lost-devices-auto-scan')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'devices' },
+        () => {
+          void ensureAutoScanForLostDevices()
+        }
+      )
+      .subscribe()
+
     return () => {
       bleService.stopScan()
+      void supabase.removeChannel(channel)
     }
-  }, [startScanning])
+  }, [ensureAutoScanForLostDevices])
 
   const startAnonymousChat = useCallback(async (device: DetectedDevice) => {
     if (!device.deviceId || !device.ownerId) {
@@ -296,9 +356,14 @@ export default function ScannerScreen() {
     }
   }, [])
 
+  const nearbyCount = useMemo(
+    () => detectedDevices.filter((item) => typeof item.distanceMeters === 'number' && item.distanceMeters <= 15).length,
+    [detectedDevices]
+  )
+
   const statusLabel = isScanning
     ? detectedDevices.length > 0
-      ? `${detectedDevices.length} Devices Detected`
+      ? `${detectedDevices.length} scanned • ${nearbyCount} nearby`
       : 'Scanning...'
     : 'Scanner paused'
 
@@ -392,6 +457,9 @@ export default function ScannerScreen() {
                         ))}
                       </View>
                       <Text style={styles.rssiText}>{`${item.rssi} dBm`}</Text>
+                      {typeof item.distanceMeters === 'number' ? (
+                        <Text style={styles.distanceText}>{`~${item.distanceMeters} m`}</Text>
+                      ) : null}
                     </View>
                   </View>
 
@@ -582,6 +650,11 @@ const styles = StyleSheet.create({
   rssiText: {
     color: Colors.outline,
     fontFamily: FontFamily.monoMedium,
+    fontSize: 10,
+  },
+  distanceText: {
+    color: Colors.secondary,
+    fontFamily: FontFamily.bodyMedium,
     fontSize: 10,
   },
   lostBadge: {

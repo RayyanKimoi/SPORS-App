@@ -43,7 +43,8 @@
         "BLUETOOTH",
         "BLUETOOTH_ADMIN",
         "BLUETOOTH_SCAN",
-        "BLUETOOTH_CONNECT"
+        "BLUETOOTH_CONNECT",
+        "BLUETOOTH_ADVERTISE"
       ]
     },
     "web": {
