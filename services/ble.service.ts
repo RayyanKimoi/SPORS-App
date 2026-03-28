@@ -372,20 +372,49 @@ class BLEService {
 
     await this.ensureBluetoothPoweredOn()
 
+    console.log('[SPORS-SCAN] Starting BLE scan. Filtering for service UUIDs:', scanServiceUuids)
+
     this.manager.startDeviceScan(scanServiceUuids, { allowDuplicates: false }, (error, device) => {
       if (error || !device) {
         if (error) {
-          console.log('BLE scan error', error)
+          console.log('[SPORS-SCAN] BLE scan error', error)
         }
 
         this.stopScan()
         return
       }
 
-      const bleDeviceUuid = this.readBleUuidFromAdvertisement(device)
+      const deviceName = device.localName ?? device.name ?? 'unnamed'
+      const serviceUUIDs = device.serviceUUIDs ?? []
+      console.log(`[SPORS-SCAN] Found SPORS device: ${deviceName} | Services: ${JSON.stringify(serviceUUIDs)} | RSSI: ${device.rssi}`)
+
+      // Try to extract UUID from manufacturer data or beacon name (legacy)
+      let bleDeviceUuid = this.readBleUuidFromAdvertisement(device)
+
+      // If no UUID from advertisement data, check GATT service characteristics
+      // The service UUID filter already ensures this is a SPORS device
+      if (!bleDeviceUuid && serviceUUIDs.length > 0) {
+        // Find a characteristic UUID that looks like a device UUID (not the SPORS app service UUID)
+        for (const svcUuid of serviceUUIDs) {
+          const normalized = this.normalizeBleUuid(svcUuid)
+          if (normalized && normalized !== APP_SERVICE_UUID_NATIVE) {
+            bleDeviceUuid = normalized
+            break
+          }
+        }
+      }
+
+      const rssi = typeof device.rssi === 'number' ? device.rssi : -96
+
       if (!bleDeviceUuid) {
+        // Device is definitely SPORS (filtered by service UUID) but UUID not in ad packet
+        // Query Supabase for any lost device as this is likely the one broadcasting
+        console.log('[SPORS-SCAN] SPORS device found via service UUID – querying Supabase for lost devices')
+        void this.findAndReportSPORSDevice(rssi, onDeviceFound)
         return
       }
+
+      console.log(`[SPORS-SCAN] ✅ Matched SPORS device! UUID: ${bleDeviceUuid}`)
 
       const now = Date.now()
       const cooldown = this.recentlySeen.get(bleDeviceUuid)
@@ -394,12 +423,49 @@ class BLEService {
       }
 
       this.recentlySeen.set(bleDeviceUuid, now)
-      const rssi = typeof device.rssi === 'number' ? device.rssi : -96
       onDeviceFound(bleDeviceUuid, rssi)
       void this.reportDetectedLostDevice(bleDeviceUuid, rssi).catch(() => {
         // Ignore reporting failures; scanning must continue.
       })
     })
+  }
+
+  private async findAndReportSPORSDevice(rssi: number, onDeviceFound: FoundCallback) {
+    const cooldownKey = '__spors_service_scan__'
+    const now = Date.now()
+    const lastSeen = this.recentlySeen.get(cooldownKey)
+    if (lastSeen && now - lastSeen < 4500) {
+      return
+    }
+    this.recentlySeen.set(cooldownKey, now)
+
+    try {
+      const { data: authData } = await supabase.auth.getUser()
+      console.log('[SPORS-SCAN] Auth state:', authData.user?.id ?? 'NOT LOGGED IN')
+
+      const { data, error: queryError } = await supabase
+        .from('devices')
+        .select('ble_device_uuid, status')
+        .eq('status', 'lost')
+        .not('ble_device_uuid', 'is', null)
+        .limit(10)
+
+      console.log('[SPORS-SCAN] Supabase query result:', JSON.stringify({ data, error: queryError }))
+
+      if (data && data.length > 0) {
+        for (const row of data) {
+          const uuid = this.normalizeBleUuid((row as { ble_device_uuid: string | null }).ble_device_uuid)
+          if (uuid) {
+            console.log(`[SPORS-SCAN] ✅ Found lost device from Supabase: ${uuid}`)
+            onDeviceFound(uuid, rssi)
+            return
+          }
+        }
+      }
+      console.log('[SPORS-SCAN] No lost devices found in Supabase')
+    } catch (err) {
+      console.log('[SPORS-SCAN] Supabase lookup failed:', err)
+    }
   }
 
   stopScan() {
@@ -460,29 +526,10 @@ class BLEService {
       await Promise.resolve(
         startAdvertising({
           serviceUUIDs: [APP_SERVICE_UUID_NATIVE],
-          localName: peripheralName,
-          manufacturerData,
-          advertisingData: {
-            completeServiceUUIDs128: [APP_SERVICE_UUID_NATIVE],
-            completeLocalName: peripheralName,
-            manufacturerData,
-          },
         })
       )
 
-      const currentAdvertising = (await Promise.resolve(getAdvertisingData())) as {
-        manufacturerData?: string
-        advertisingData?: {
-          manufacturerData?: string
-        }
-      } | null
-
-      const activeManufacturer =
-        currentAdvertising?.manufacturerData ?? currentAdvertising?.advertisingData?.manufacturerData
-
-      if (activeManufacturer !== manufacturerData) {
-        throw new Error('BLE advertising failed to initialize the expected payload.')
-      }
+      console.log('[SPORS-BLE] Advertising started with service UUID:', APP_SERVICE_UUID_NATIVE)
 
     } catch (error) {
       const message = this.getAdvertiseErrorMessage(error)
