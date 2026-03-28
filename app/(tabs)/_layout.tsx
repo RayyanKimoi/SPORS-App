@@ -45,11 +45,12 @@ export default function TabsLayout() {
         tabBarStyle: styles.tabBar,
         tabBarBackground: () => <TabBarBackground />,
         tabBarItemStyle: styles.tabBarItem,
+        tabBarIconStyle: styles.tabBarIcon,
         tabBarLabelStyle: {
           fontFamily: FontFamily.bodyMedium,
           fontSize: 10,
-          marginTop: 0,
-          marginBottom: 2,
+          marginTop: 2,
+          marginBottom: 0,
         },
       }}
     >
@@ -110,7 +111,7 @@ export default function TabsLayout() {
 
 const styles = StyleSheet.create({
   tabBar: {
-    height: 92,
+    height: 102,
     position: 'absolute',
     left: 0,
     right: 0,
@@ -120,8 +121,8 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,
     backgroundColor: 'transparent',
-    paddingTop: 8,
-    paddingBottom: 12,
+    paddingTop: 12,
+    paddingBottom: 14,
     elevation: 30,
     shadowColor: '#000000',
     shadowOffset: { width: 0, height: -24 },
@@ -129,7 +130,13 @@ const styles = StyleSheet.create({
     shadowRadius: 48,
   },
   tabBarItem: {
-    paddingVertical: 2,
+    justifyContent: 'flex-end',
+    paddingTop: 8,
+    paddingBottom: 6,
+  },
+  tabBarIcon: {
+    marginTop: 6,
+    marginBottom: 0,
   },
   iconPill: {
     minWidth: 34,

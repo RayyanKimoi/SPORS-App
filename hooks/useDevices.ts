@@ -8,11 +8,14 @@ export type DeviceStatus = 'registered' | 'lost' | 'found' | 'recovered' | 'stol
 export type DeviceRecord = {
   id: string
   owner_id: string
+  state: string | null
   make: string
   model: string
   imei_primary: string
   imei_secondary: string | null
   serial_number: string
+  spors_key: string | null
+  ble_device_uuid: string | null
   color: string | null
   purchase_date: string | null
   status: DeviceStatus
@@ -34,6 +37,7 @@ export type BeaconLog = {
 }
 
 type RegisterDeviceInput = {
+  state: string
   make: string
   model: string
   imei_primary: string
@@ -214,6 +218,7 @@ export async function registerDevice(input: RegisterDeviceInput): Promise<Device
 
   const payload = {
     owner_id: userId,
+    state: input.state.trim().toUpperCase(),
     make: input.make.trim(),
     model: input.model.trim(),
     imei_primary: imeiPrimary,

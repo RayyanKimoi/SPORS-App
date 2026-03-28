@@ -83,6 +83,11 @@ export default function AddDeviceScreen() {
       return
     }
 
+    if (!stateCode) {
+      setError('State is required.')
+      return
+    }
+
     if (!primaryValid) {
       setError('Primary IMEI is invalid.')
       return
@@ -97,7 +102,8 @@ export default function AddDeviceScreen() {
     setError(null)
 
     try {
-      await registerDevice({
+      const device = await registerDevice({
+        state: stateCode,
         make,
         model,
         imei_primary: imeiPrimary,
@@ -107,7 +113,10 @@ export default function AddDeviceScreen() {
         purchase_date: purchaseDate ? formatDate(purchaseDate) : null,
       })
 
-      router.replace('/(tabs)/devices')
+      router.replace({
+        pathname: '/device/confirmation',
+        params: { deviceId: device.id },
+      })
     } catch (submitError) {
       setError(submitError instanceof Error ? submitError.message : 'Unable to register device.')
     } finally {
