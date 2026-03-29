@@ -1,6 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
+  ActivityIndicator,
   KeyboardAvoidingView,
+  Linking,
+  Modal,
   Platform,
   Pressable,
   ScrollView,
@@ -11,6 +14,7 @@ import {
 } from 'react-native'
 import MaterialIcons from '@expo/vector-icons/MaterialIcons'
 import { useLocalSearchParams, useRouter } from 'expo-router'
+import * as Location from 'expo-location'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 import { ErrorState } from '../../components/ui/ErrorState'
@@ -50,6 +54,9 @@ type ChatMessage = {
   content?: string | null
   is_read: boolean
   sent_at: string
+  message_type?: 'text' | 'location'
+  latitude?: number | null
+  longitude?: number | null
 }
 
 function normalizeDevice(
@@ -71,6 +78,26 @@ function formatStamp(dateIso: string) {
   return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
 }
 
+function parseLocationMessage(text: string): { lat: number; lng: number } | null {
+  const match = text.match(/📍 Shared location: ([-\d.]+), ([-\d.]+)/)
+  if (match) {
+    return { lat: parseFloat(match[1]), lng: parseFloat(match[2]) }
+  }
+  return null
+}
+
+function openMapsUrl(lat: number, lng: number) {
+  const url = Platform.select({
+    ios: `maps:0,0?q=${lat},${lng}`,
+    android: `geo:0,0?q=${lat},${lng}(Shared+Location)`,
+  }) ?? `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`
+  
+  Linking.openURL(url).catch(() => {
+    // Fallback to Google Maps web
+    Linking.openURL(`https://www.google.com/maps/search/?api=1&query=${lat},${lng}`)
+  })
+}
+
 export default function ChatRoomScreen() {
   const router = useRouter()
   const { user } = useAuth()
@@ -84,6 +111,10 @@ export default function ChatRoomScreen() {
   const [sending, setSending] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null)
+  const [showLocationModal, setShowLocationModal] = useState(false)
+  const [showMarkFoundModal, setShowMarkFoundModal] = useState(false)
+  const [sharingLocation, setSharingLocation] = useState(false)
+  const [markingFound, setMarkingFound] = useState(false)
 
   const scrollRef = useRef<ScrollView | null>(null)
 
@@ -150,34 +181,20 @@ export default function ChatRoomScreen() {
         throw new Error('This chat room no longer exists.')
       }
 
-      // Load messages
+      // Load messages - use 'content' column which matches the schema
       let normalizedMessages: ChatMessage[] = []
       const { data: msgData, error: msgError } = await supabase
         .from('chat_messages')
-        .select('id, room_id, sender_role, message_text, is_read, sent_at')
+        .select('id, room_id, sender_role, content, is_read, sent_at')
         .eq('room_id', roomId)
         .order('sent_at', { ascending: true })
 
-      if (!msgError) {
-        normalizedMessages = ((msgData as ChatMessage[]) ?? []).map((message) => ({
+      if (!msgError && msgData) {
+        normalizedMessages = (msgData as ChatMessage[]).map((message) => ({
           ...message,
-          message_text: message.message_text ?? message.content ?? '',
+          message_text: message.content ?? '',
         }))
-      } else if (msgError.message?.toLowerCase().includes('message_text')) {
-        // Fallback: try legacy column name
-        const { data: legacyData } = await supabase
-          .from('chat_messages')
-          .select('id, room_id, sender_role, content, is_read, sent_at')
-          .eq('room_id', roomId)
-          .order('sent_at', { ascending: true })
-
-        if (legacyData) {
-          normalizedMessages = ((legacyData as ChatMessage[]) ?? []).map((message) => ({
-            ...message,
-            message_text: message.message_text ?? message.content ?? '',
-          }))
-        }
-      } else {
+      } else if (msgError) {
         console.log('[SPORS-CHAT] Messages query error:', msgError.message)
       }
 
@@ -217,7 +234,7 @@ export default function ChatRoomScreen() {
           const incoming = payload.new as ChatMessage
           const normalizedIncoming = {
             ...incoming,
-            message_text: incoming.message_text ?? incoming.content ?? '',
+            message_text: incoming.content ?? '',
           }
 
           setMessages((current) => {
@@ -243,6 +260,50 @@ export default function ChatRoomScreen() {
     }
   }, [markIncomingAsRead, role, roomId])
 
+  // Polling fallback - fetches new messages every 5 seconds
+  useEffect(() => {
+    if (!roomId || !room?.is_active) {
+      return
+    }
+
+    const pollMessages = async () => {
+      try {
+        const { data: msgData } = await supabase
+          .from('chat_messages')
+          .select('id, room_id, sender_role, content, is_read, sent_at')
+          .eq('room_id', roomId)
+          .order('sent_at', { ascending: true })
+
+        if (msgData) {
+          const normalized = msgData.map((msg) => ({
+            ...msg,
+            message_text: msg.content ?? '',
+          }))
+          
+          setMessages((current) => {
+            // Only update if there are new messages
+            if (normalized.length !== current.length) {
+              return normalized as ChatMessage[]
+            }
+            // Check if last message is different
+            const lastNew = normalized[normalized.length - 1]
+            const lastCurrent = current[current.length - 1]
+            if (lastNew?.id !== lastCurrent?.id) {
+              return normalized as ChatMessage[]
+            }
+            return current
+          })
+        }
+      } catch {
+        // Silent fail for polling
+      }
+    }
+
+    const interval = setInterval(pollMessages, 5000) // Poll every 5 seconds
+
+    return () => clearInterval(interval)
+  }, [roomId, room?.is_active])
+
   const sendMessage = useCallback(async () => {
     const text = messageText.trim()
     if (!roomId || !text || sending || !room?.is_active) {
@@ -251,21 +312,13 @@ export default function ChatRoomScreen() {
 
     setSending(true)
     try {
-      let insertResponse = await supabase.from('chat_messages').insert({
+      // Use 'content' column which matches the schema
+      const insertResponse = await supabase.from('chat_messages').insert({
         room_id: roomId,
         sender_role: role,
-        message_text: text,
+        content: text,
         is_read: false,
       })
-
-      if (insertResponse.error?.message?.toLowerCase().includes('message_text')) {
-        insertResponse = await supabase.from('chat_messages').insert({
-          room_id: roomId,
-          sender_role: role,
-          content: text,
-          is_read: false,
-        })
-      }
 
       if (insertResponse.error) {
         throw insertResponse.error
@@ -290,23 +343,63 @@ export default function ChatRoomScreen() {
       return
     }
 
+    setSharingLocation(true)
     try {
+      // Get current location
+      const { status } = await Location.requestForegroundPermissionsAsync()
+      if (status !== 'granted') {
+        throw new Error('Location permission denied')
+      }
+      
+      const location = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.High,
+      })
+      
+      const { latitude, longitude } = location.coords
+      
+      // Report to BLE service (updates device location)
       await bleService.reportLocationForDevice(room.device_id, null)
-      setToast({ message: 'Location shared with owner.', type: 'success' })
+      
+      // Send location message in chat
+      const locationMessage = `📍 Shared location: ${latitude.toFixed(6)}, ${longitude.toFixed(6)}`
+      await supabase.from('chat_messages').insert({
+        room_id: roomId,
+        sender_role: role,
+        content: locationMessage,
+        is_read: false,
+      })
+      
+      setShowLocationModal(false)
+      setToast({ message: 'Location shared in chat.', type: 'success' })
     } catch (nextError) {
       setToast({
         message: nextError instanceof Error ? nextError.message : 'Unable to share location.',
         type: 'error',
       })
+    } finally {
+      setSharingLocation(false)
     }
-  }, [room?.device_id])
+  }, [room?.device_id, roomId, role])
 
   const closeRecovery = useCallback(async () => {
     if (!room?.device_id || !roomId) {
       return
     }
 
+    setMarkingFound(true)
     try {
+      // Send system message before closing chat
+      const closingMessage = role === 'owner' 
+        ? '🎉 Device owner has marked this device as found. Chat ended.'
+        : '🎉 Finder has confirmed device recovery. Chat ended.'
+      
+      await supabase.from('chat_messages').insert({
+        room_id: roomId,
+        sender_role: 'system',
+        content: closingMessage,
+        is_read: false,
+      })
+
       const { error: deviceError } = await supabase
         .from('devices')
         .update({
@@ -335,15 +428,26 @@ export default function ChatRoomScreen() {
         .eq('device_id', room.device_id)
         .eq('is_active', true)
 
+      // Stop broadcasting mode so scanner works again
+      await bleService.stopBroadcasting()
+
       setRoom((current) => (current ? { ...current, is_active: false } : current))
+      setShowMarkFoundModal(false)
       setToast({ message: 'Marked as found and chat closed.', type: 'success' })
+      
+      // Navigate back after a short delay to let user see the toast
+      setTimeout(() => {
+        router.back()
+      }, 1500)
     } catch (nextError) {
       setToast({
         message: nextError instanceof Error ? nextError.message : 'Unable to close recovery flow.',
         type: 'error',
       })
+    } finally {
+      setMarkingFound(false)
     }
-  }, [room?.device_id, roomId])
+  }, [room?.device_id, roomId, router, role])
 
   const device = normalizeDevice(room?.devices ?? null)
 
@@ -410,6 +514,35 @@ export default function ChatRoomScreen() {
               }
 
               const mine = message.sender_role === role
+              const locationData = parseLocationMessage(message.message_text ?? '')
+              
+              if (locationData) {
+                // Location message with map link
+                return (
+                  <View key={message.id} style={[styles.messageWrap, mine ? styles.messageMineWrap : styles.messageOtherWrap]}>
+                    <View style={[styles.messageBubble, styles.locationBubble, mine ? styles.messageMine : styles.messageOther]}>
+                      <View style={styles.locationHeader}>
+                        <MaterialIcons name="location-on" size={20} color={mine ? Colors.onPrimary : Colors.primary} />
+                        <Text style={[styles.messageText, mine ? styles.messageTextMine : styles.messageTextOther]}>
+                          Location Shared
+                        </Text>
+                      </View>
+                      <Text style={[styles.locationCoords, mine ? styles.messageTextMine : styles.messageTextOther]}>
+                        {locationData.lat.toFixed(6)}, {locationData.lng.toFixed(6)}
+                      </Text>
+                      <Pressable 
+                        style={[styles.viewMapButton, mine && styles.viewMapButtonMine]}
+                        onPress={() => openMapsUrl(locationData.lat, locationData.lng)}
+                      >
+                        <MaterialIcons name="map" size={16} color={mine ? Colors.primary : Colors.onPrimary} />
+                        <Text style={[styles.viewMapText, mine && styles.viewMapTextMine]}>View on Map</Text>
+                      </Pressable>
+                    </View>
+                    <Text style={styles.messageTime}>{formatStamp(message.sent_at)}</Text>
+                  </View>
+                )
+              }
+              
               return (
                 <View key={message.id} style={[styles.messageWrap, mine ? styles.messageMineWrap : styles.messageOtherWrap]}>
                   <View style={[styles.messageBubble, mine ? styles.messageMine : styles.messageOther]}>
@@ -431,12 +564,12 @@ export default function ChatRoomScreen() {
         ) : null}
 
         <View style={styles.actionRow}>
-          <Pressable style={styles.actionButton} onPress={() => void shareLocation()}>
+          <Pressable style={styles.actionButton} onPress={() => setShowLocationModal(true)}>
             <MaterialIcons name="my-location" size={16} color={Colors.primary} />
             <Text style={styles.actionButtonText}>Share Location</Text>
           </Pressable>
 
-          <Pressable style={styles.actionButtonDanger} onPress={() => void closeRecovery()}>
+          <Pressable style={styles.actionButtonDanger} onPress={() => setShowMarkFoundModal(true)}>
             <MaterialIcons name="check-circle" size={16} color={Colors.secondary} />
             <Text style={styles.actionButtonDangerText}>Mark Found</Text>
           </Pressable>
@@ -463,6 +596,84 @@ export default function ChatRoomScreen() {
           </Pressable>
         </View>
       </KeyboardAvoidingView>
+
+      {/* Share Location Confirmation Modal */}
+      <Modal
+        visible={showLocationModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowLocationModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalIconWrap}>
+              <MaterialIcons name="my-location" size={32} color={Colors.primary} />
+            </View>
+            <Text style={styles.modalTitle}>Share Your Location?</Text>
+            <Text style={styles.modalDescription}>
+              Your current location will be shared with the device owner to help them recover their device.
+            </Text>
+            <View style={styles.modalActions}>
+              <Pressable
+                style={styles.modalCancelButton}
+                onPress={() => setShowLocationModal(false)}
+                disabled={sharingLocation}
+              >
+                <Text style={styles.modalCancelText}>Cancel</Text>
+              </Pressable>
+              <Pressable
+                style={[styles.modalConfirmButton, sharingLocation && styles.modalButtonDisabled]}
+                onPress={() => void shareLocation()}
+                disabled={sharingLocation}
+              >
+                <MaterialIcons name="share-location" size={18} color={Colors.onPrimary} />
+                <Text style={styles.modalConfirmText}>
+                  {sharingLocation ? 'Sharing...' : 'Share Location'}
+                </Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Mark Found Confirmation Modal */}
+      <Modal
+        visible={showMarkFoundModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowMarkFoundModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={[styles.modalIconWrap, styles.modalIconSuccess]}>
+              <MaterialIcons name="check-circle" size={32} color={Colors.secondary} />
+            </View>
+            <Text style={styles.modalTitle}>Mark Device as Found?</Text>
+            <Text style={styles.modalDescription}>
+              This will mark the device as recovered and close this chat. This action cannot be undone.
+            </Text>
+            <View style={styles.modalActions}>
+              <Pressable
+                style={styles.modalCancelButton}
+                onPress={() => setShowMarkFoundModal(false)}
+                disabled={markingFound}
+              >
+                <Text style={styles.modalCancelText}>Cancel</Text>
+              </Pressable>
+              <Pressable
+                style={[styles.modalSuccessButton, markingFound && styles.modalButtonDisabled]}
+                onPress={() => void closeRecovery()}
+                disabled={markingFound}
+              >
+                <MaterialIcons name="check" size={18} color={Colors.background} />
+                <Text style={styles.modalSuccessText}>
+                  {markingFound ? 'Processing...' : 'Mark Found'}
+                </Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   )
 }
@@ -564,6 +775,42 @@ const styles = StyleSheet.create({
     fontFamily: FontFamily.monoMedium,
     fontSize: 10,
   },
+  locationBubble: {
+    paddingVertical: 12,
+  },
+  locationHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 4,
+  },
+  locationCoords: {
+    fontFamily: FontFamily.monoMedium,
+    fontSize: 11,
+    opacity: 0.8,
+    marginBottom: 10,
+  },
+  viewMapButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    backgroundColor: Colors.primary,
+  },
+  viewMapButtonMine: {
+    backgroundColor: Colors.onPrimary,
+  },
+  viewMapText: {
+    color: Colors.onPrimary,
+    fontFamily: FontFamily.bodyMedium,
+    fontSize: 12,
+  },
+  viewMapTextMine: {
+    color: Colors.primary,
+  },
   systemMessageWrap: {
     alignItems: 'center',
     paddingVertical: 6,
@@ -648,5 +895,100 @@ const styles = StyleSheet.create({
   },
   sendButtonDisabled: {
     opacity: 0.45,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+  },
+  modalContent: {
+    width: '100%',
+    maxWidth: 320,
+    backgroundColor: Colors.surfaceContainerHigh,
+    borderRadius: 20,
+    padding: 24,
+    alignItems: 'center',
+  },
+  modalIconWrap: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: 'rgba(0,122,255,0.15)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 16,
+  },
+  modalIconSuccess: {
+    backgroundColor: 'rgba(70,241,187,0.15)',
+  },
+  modalTitle: {
+    color: Colors.onSurface,
+    fontFamily: FontFamily.headingSemiBold,
+    fontSize: 18,
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+  modalDescription: {
+    color: Colors.outline,
+    fontFamily: FontFamily.bodyRegular,
+    fontSize: 14,
+    textAlign: 'center',
+    lineHeight: 20,
+    marginBottom: 24,
+  },
+  modalActions: {
+    flexDirection: 'row',
+    gap: 12,
+    width: '100%',
+  },
+  modalCancelButton: {
+    flex: 1,
+    height: 44,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: Colors.outlineVariant,
+    backgroundColor: Colors.surfaceContainerLowest,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalCancelText: {
+    color: Colors.onSurface,
+    fontFamily: FontFamily.bodyMedium,
+    fontSize: 14,
+  },
+  modalConfirmButton: {
+    flex: 1,
+    height: 44,
+    borderRadius: 12,
+    backgroundColor: Colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+    gap: 6,
+  },
+  modalConfirmText: {
+    color: Colors.onPrimary,
+    fontFamily: FontFamily.bodyMedium,
+    fontSize: 14,
+  },
+  modalSuccessButton: {
+    flex: 1,
+    height: 44,
+    borderRadius: 12,
+    backgroundColor: Colors.secondary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+    gap: 6,
+  },
+  modalSuccessText: {
+    color: Colors.background,
+    fontFamily: FontFamily.bodyMedium,
+    fontSize: 14,
+  },
+  modalButtonDisabled: {
+    opacity: 0.6,
   },
 })

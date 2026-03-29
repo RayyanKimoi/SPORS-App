@@ -185,13 +185,10 @@ export default function ProfileScreen() {
 
         <GroupLabel label="ACCOUNT" />
         <View style={styles.groupWrap}>
-          <SettingRow label="Edit Profile" onPress={() => Alert.alert('Soon', 'Edit profile is coming in Phase 4.')} />
+          <SettingRow label="Edit Profile" onPress={() => router.push('/edit-profile')} />
           <SettingRow label="Verify Aadhaar" onPress={() => setAadhaarModalVisible(true)} />
           <SettingRow label="Settings" onPress={() => router.push('/settings')} />
-          <SettingRow
-            label="Change Password"
-            onPress={() => Alert.alert('Security', 'Use reset-password from auth flow for now.')}
-          />
+          <SettingRow label="Change Password" onPress={() => router.push('/change-password')} />
         </View>
 
         <GroupLabel label="RECOVERY" />
@@ -203,9 +200,17 @@ export default function ProfileScreen() {
 
         <GroupLabel label="APP" />
         <View style={styles.groupWrap}>
-          <SettingRow label="About SPORS" onPress={() => Alert.alert('SPORS', 'Secure Phone Ownership & Recovery System')} />
-          <SettingRow label="Privacy Policy" onPress={() => Alert.alert('Policy', 'Policy viewer will be added in Phase 4.')} />
-          <SettingRow label="Report a Bug" onPress={() => Alert.alert('Support', 'Please use support@spors.app for now.')} />
+          <SettingRow label="About SPORS" onPress={() => router.push('/about')} />
+          <SettingRow label="Privacy Policy" onPress={() => router.push('/privacy-policy')} />
+          <SettingRow label="Report a Bug" onPress={() => router.push('/report-bug')} />
+        </View>
+
+        <View style={styles.disclaimerCard}>
+          <MaterialIcons name="info-outline" size={18} color={Colors.tertiary} />
+          <Text style={styles.disclaimerText}>
+            SPORS is a device tracking aid and does not guarantee device recovery. Always report 
+            theft to local authorities. Use caution when meeting to recover devices.
+          </Text>
         </View>
 
         <GroupLabel label="DANGER ZONE" />
@@ -328,6 +333,24 @@ const styles = StyleSheet.create({
   },
   settingLabelDanger: {
     color: Colors.error,
+  },
+  disclaimerCard: {
+    marginHorizontal: 16,
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 10,
+    backgroundColor: 'rgba(255,185,95,0.1)',
+    borderRadius: 12,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255,185,95,0.25)',
+  },
+  disclaimerText: {
+    flex: 1,
+    color: Colors.onSurfaceVariant,
+    fontFamily: FontFamily.bodyRegular,
+    fontSize: 11,
+    lineHeight: 16,
   },
   link: {
     color: Colors.onSurfaceVariant,

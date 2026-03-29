@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { Animated, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
+import { Animated, Pressable, StyleSheet, Text, View } from 'react-native'
 import MaterialIcons from '@expo/vector-icons/MaterialIcons'
 import { useRouter } from 'expo-router'
 import { SafeAreaView } from 'react-native-safe-area-context'
+import { Swipeable, GestureHandlerRootView } from 'react-native-gesture-handler'
 
 import { Header } from '../../components/ui/Header'
 import { ErrorState } from '../../components/ui/ErrorState'
@@ -71,116 +72,72 @@ function SwipeableNotificationCard({
   onPress: () => void
   onDismiss: (id: string) => void
 }) {
-  const translateX = useRef(new Animated.Value(0)).current
-  const itemHeight = useRef(new Animated.Value(1)).current
-  const panStartX = useRef(0)
-  const currentTranslateX = useRef(0)
-
+  const swipeableRef = useRef<Swipeable>(null)
   const visuals = getVisualsByType(item.type)
 
-  const handleTouchStart = useCallback(
-    (e: { nativeEvent: { pageX: number } }) => {
-      panStartX.current = e.nativeEvent.pageX
-    },
-    []
-  )
-
-  const handleTouchMove = useCallback(
-    (e: { nativeEvent: { pageX: number } }) => {
-      const dx = e.nativeEvent.pageX - panStartX.current
-      // Only allow swiping left
-      const clampedDx = Math.min(0, dx)
-      currentTranslateX.current = clampedDx
-      translateX.setValue(clampedDx)
-    },
-    [translateX]
-  )
-
-  const handleTouchEnd = useCallback(() => {
-    if (currentTranslateX.current < -120) {
-      // Swipe far enough → dismiss
-      Animated.parallel([
-        Animated.timing(translateX, {
-          toValue: -500,
-          duration: 250,
-          useNativeDriver: true,
-        }),
-        Animated.timing(itemHeight, {
-          toValue: 0,
-          duration: 250,
-          useNativeDriver: false,
-          delay: 150,
-        }),
-      ]).start(() => {
-        onDismiss(item.id)
+  const renderRightActions = useCallback(
+    (
+      progress: Animated.AnimatedInterpolation<number>,
+      dragX: Animated.AnimatedInterpolation<number>
+    ) => {
+      const scale = dragX.interpolate({
+        inputRange: [-100, 0],
+        outputRange: [1, 0.5],
+        extrapolate: 'clamp',
       })
-    } else {
-      // Snap back
-      Animated.spring(translateX, {
-        toValue: 0,
-        useNativeDriver: true,
-        tension: 40,
-        friction: 8,
-      }).start()
-      currentTranslateX.current = 0
-    }
-  }, [translateX, itemHeight, item.id, onDismiss])
 
-  const opacity = translateX.interpolate({
-    inputRange: [-200, 0],
-    outputRange: [0.3, 1],
-    extrapolate: 'clamp',
-  })
+      return (
+        <Pressable
+          style={styles.deleteAction}
+          onPress={() => {
+            swipeableRef.current?.close()
+            onDismiss(item.id)
+          }}
+        >
+          <Animated.View style={[styles.deleteActionContent, { transform: [{ scale }] }]}>
+            <MaterialIcons name="delete" size={22} color="#fff" />
+            <Text style={styles.deleteText}>Dismiss</Text>
+          </Animated.View>
+        </Pressable>
+      )
+    },
+    [item.id, onDismiss]
+  )
+
+  const handleSwipeOpen = useCallback(() => {
+    // Auto-dismiss after full swipe
+    setTimeout(() => {
+      onDismiss(item.id)
+    }, 200)
+  }, [item.id, onDismiss])
 
   return (
-    <Animated.View
-      style={[
-        styles.swipeContainer,
-        {
-          maxHeight: itemHeight.interpolate({
-            inputRange: [0, 1],
-            outputRange: [0, 120],
-          }),
-          opacity: itemHeight,
-          marginBottom: itemHeight.interpolate({
-            inputRange: [0, 1],
-            outputRange: [0, 12],
-          }),
-        },
-      ]}
+    <Swipeable
+      ref={swipeableRef}
+      renderRightActions={renderRightActions}
+      onSwipeableOpen={handleSwipeOpen}
+      rightThreshold={100}
+      friction={2}
+      overshootRight={false}
     >
-      {/* Red delete background */}
-      <View style={styles.deleteBackground}>
-        <MaterialIcons name="delete-sweep" size={22} color="#fff" />
-        <Text style={styles.deleteText}>Dismiss</Text>
-      </View>
-
-      {/* Swipeable foreground */}
-      <Animated.View
-        style={[{ transform: [{ translateX }], opacity }]}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
+      <Pressable
+        style={[styles.notificationCard, !item.is_read && styles.notificationCardUnread]}
+        onPress={onPress}
       >
-        <Pressable
-          style={[styles.notificationCard, !item.is_read && styles.notificationCardUnread]}
-          onPress={onPress}
-        >
-          <View style={[styles.iconWrap, { backgroundColor: visuals.bg }]}>
-            <MaterialIcons name={visuals.icon} size={18} color={visuals.tint} />
-          </View>
+        <View style={[styles.iconWrap, { backgroundColor: visuals.bg }]}>
+          <MaterialIcons name={visuals.icon} size={18} color={visuals.tint} />
+        </View>
 
-          <View style={styles.textWrap}>
-            <Text style={styles.title}>{item.title}</Text>
-            <Text style={styles.body} numberOfLines={2}>
-              {item.body}
-            </Text>
-          </View>
+        <View style={styles.textWrap}>
+          <Text style={styles.title}>{item.title}</Text>
+          <Text style={styles.body} numberOfLines={2}>
+            {item.body}
+          </Text>
+        </View>
 
-          <Text style={styles.time}>{getRelativeTime(item.created_at)}</Text>
-        </Pressable>
-      </Animated.View>
-    </Animated.View>
+        <Text style={styles.time}>{getRelativeTime(item.created_at)}</Text>
+      </Pressable>
+    </Swipeable>
   )
 }
 
@@ -297,54 +254,57 @@ export default function AlertsScreen() {
   )
 
   return (
-    <SafeAreaView style={styles.container}>
-      <Header title="Notifications" rightIcon="notifications-none" />
+    <GestureHandlerRootView style={styles.container}>
+      <SafeAreaView style={styles.container}>
+        <Header title="Notifications" rightIcon="notifications-none" />
 
-      <Toast
-        visible={!!toastMessage}
-        message={toastMessage}
-        type="info"
-        onHide={() => setToastMessage('')}
-      />
+        <Toast
+          visible={!!toastMessage}
+          message={toastMessage}
+          type="info"
+          onHide={() => setToastMessage('')}
+        />
 
-      <View style={styles.topActionRow}>
-        <Pressable onPress={() => void markAllAsRead()} disabled={!unreadCount}>
-          <Text style={[styles.markAllText, !unreadCount && styles.markAllDisabled]}>Mark all as read</Text>
-        </Pressable>
-      </View>
+        <View style={styles.topActionRow}>
+          <Pressable onPress={() => void markAllAsRead()} disabled={!unreadCount}>
+            <Text style={[styles.markAllText, !unreadCount && styles.markAllDisabled]}>Mark all as read</Text>
+          </Pressable>
+        </View>
 
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        {loading ? (
-          <View style={styles.skeletonWrap}>
-            <Skeleton height={60} borderRadius={14} />
-            <Skeleton height={60} borderRadius={14} />
-            <Skeleton height={60} borderRadius={14} />
-          </View>
-        ) : null}
-
-        {!loading && error ? <ErrorState message={error} onRetry={() => void fetchNotifications()} /> : null}
-
-        {!loading && !error && !notifications.length ? (
-          <View style={styles.emptyState}>
-            <View style={styles.emptyIconWrap}>
-              <MaterialIcons name="shield" size={26} color={Colors.primary} />
+        <Animated.ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+          {loading ? (
+            <View style={styles.skeletonWrap}>
+              <Skeleton height={60} borderRadius={14} />
+              <Skeleton height={60} borderRadius={14} />
+              <Skeleton height={60} borderRadius={14} />
             </View>
-            <Text style={styles.emptyTitle}>No alerts. Your devices are safe.</Text>
-            <Text style={styles.emptyHint}>Swipe left on alerts to dismiss them</Text>
-          </View>
-        ) : null}
+          ) : null}
 
-        {!error &&
-          notifications.map((item) => (
-            <SwipeableNotificationCard
-              key={item.id}
-              item={item}
-              onPress={() => void openNotification(item)}
-              onDismiss={(id) => void dismissNotification(id)}
-            />
-          ))}
-      </ScrollView>
-    </SafeAreaView>
+          {!loading && error ? <ErrorState message={error} onRetry={() => void fetchNotifications()} /> : null}
+
+          {!loading && !error && !notifications.length ? (
+            <View style={styles.emptyState}>
+              <View style={styles.emptyIconWrap}>
+                <MaterialIcons name="shield" size={26} color={Colors.primary} />
+              </View>
+              <Text style={styles.emptyTitle}>No alerts. Your devices are safe.</Text>
+              <Text style={styles.emptyHint}>Swipe left on alerts to dismiss them</Text>
+            </View>
+          ) : null}
+
+          {!error &&
+            notifications.map((item) => (
+              <View key={item.id} style={styles.cardWrapper}>
+                <SwipeableNotificationCard
+                  item={item}
+                  onPress={() => void openNotification(item)}
+                  onDismiss={(id) => void dismissNotification(id)}
+                />
+              </View>
+            ))}
+        </Animated.ScrollView>
+      </SafeAreaView>
+    </GestureHandlerRootView>
   )
 }
 
@@ -401,24 +361,27 @@ const styles = StyleSheet.create({
     fontFamily: FontFamily.bodyRegular,
     fontSize: 12,
   },
-  swipeContainer: {
-    overflow: 'hidden',
-    borderRadius: 16,
+  cardWrapper: {
+    marginBottom: 12,
   },
-  deleteBackground: {
-    ...StyleSheet.absoluteFillObject,
+  deleteAction: {
     backgroundColor: '#c62828',
-    borderRadius: 16,
-    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'flex-end',
+    width: 100,
+    borderTopRightRadius: 16,
+    borderBottomRightRadius: 16,
+  },
+  deleteActionContent: {
     alignItems: 'center',
-    justifyContent: 'flex-end',
-    paddingRight: 24,
-    gap: 6,
+    justifyContent: 'center',
+    paddingHorizontal: 20,
   },
   deleteText: {
     color: '#fff',
     fontFamily: FontFamily.bodyMedium,
-    fontSize: 13,
+    fontSize: 11,
+    marginTop: 2,
   },
   notificationCard: {
     borderRadius: 16,

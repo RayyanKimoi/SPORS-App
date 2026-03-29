@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
+  AppState,
   Modal,
   Pressable,
   ScrollView,
@@ -20,6 +21,7 @@ import { FontFamily } from '../../constants/typography'
 import { useAuth } from '../../hooks/useAuth'
 import { useDevices } from '../../hooks/useDevices'
 import { supabase } from '../../lib/supabase'
+import { bleService } from '../../services/ble.service'
 
 type NotificationItem = {
   id: string
@@ -93,6 +95,59 @@ export default function HomeScreen() {
   const [aadhaarModalVisible, setAadhaarModalVisible] = useState(false)
   const [showReportPicker, setShowReportPicker] = useState(false)
   const [displayCounts, setDisplayCounts] = useState({ total: 0, alerts: 0, safe: 0 })
+  
+  const passiveScanRef = useRef<NodeJS.Timeout | null>(null)
+  const appStateRef = useRef(AppState.currentState)
+
+  // Passive BLE scanning - runs every 30 seconds while home screen is active
+  useEffect(() => {
+    const runPassiveScan = async () => {
+      try {
+        const isBroadcasting = await bleService.isBroadcastingMode()
+        if (isBroadcasting) {
+          return // Don't scan if we're broadcasting (lost device mode)
+        }
+        
+        // Quick 10-second scan
+        await bleService.scanForSPORSDevices(() => {
+          // Callback handles reporting to Supabase automatically
+        })
+        
+        // Stop after 10 seconds
+        setTimeout(() => {
+          bleService.stopScan()
+        }, 10000)
+      } catch {
+        // Silent fail - permissions not granted or other issue
+      }
+    }
+
+    const handleAppStateChange = (nextState: typeof AppState.currentState) => {
+      if (appStateRef.current.match(/inactive|background/) && nextState === 'active') {
+        // App came to foreground - run a scan
+        void runPassiveScan()
+      }
+      appStateRef.current = nextState
+    }
+
+    const appStateSubscription = AppState.addEventListener('change', handleAppStateChange)
+
+    // Initial scan when component mounts
+    void runPassiveScan()
+
+    // Set up interval for periodic scanning (every 30 seconds)
+    passiveScanRef.current = setInterval(() => {
+      void runPassiveScan()
+    }, 30000)
+
+    return () => {
+      if (passiveScanRef.current) {
+        clearInterval(passiveScanRef.current)
+      }
+      appStateSubscription.remove()
+      bleService.stopScan()
+    }
+  }, [])
 
   const fetchNotifications = useCallback(async () => {
     if (!user?.id) {

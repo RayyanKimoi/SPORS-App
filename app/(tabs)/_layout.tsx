@@ -1,7 +1,6 @@
 import MaterialIcons from '@expo/vector-icons/MaterialIcons'
 import { Tabs } from 'expo-router'
-import { StyleSheet, Text, View } from 'react-native'
-import { BlurView } from 'expo-blur'
+import { Platform, StyleSheet, View } from 'react-native'
 
 import { Colors } from '../../constants/colors'
 import { FontFamily } from '../../constants/typography'
@@ -17,18 +16,9 @@ function TabIcon({ focused, active, inactive }: TabIconProps) {
     <View style={[styles.iconPill, focused && styles.iconPillActive]}>
       <MaterialIcons
         name={focused ? active : inactive}
-        size={22}
+        size={24}
         color={focused ? Colors.accent : Colors.outline}
       />
-    </View>
-  )
-}
-
-function TabBarBackground() {
-  return (
-    <View style={styles.tabBackgroundWrap}>
-      <BlurView intensity={36} tint="dark" style={StyleSheet.absoluteFill} />
-      <View style={styles.tabBackgroundOverlay} />
     </View>
   )
 }
@@ -43,15 +33,9 @@ export default function TabsLayout() {
         tabBarActiveTintColor: Colors.accent,
         tabBarInactiveTintColor: Colors.outline,
         tabBarStyle: styles.tabBar,
-        tabBarBackground: () => <TabBarBackground />,
         tabBarItemStyle: styles.tabBarItem,
         tabBarIconStyle: styles.tabBarIcon,
-        tabBarLabelStyle: {
-          fontFamily: FontFamily.bodyMedium,
-          fontSize: 10,
-          marginTop: 2,
-          marginBottom: 0,
-        },
+        tabBarLabelStyle: styles.tabBarLabel,
       }}
     >
       <Tabs.Screen
@@ -111,52 +95,34 @@ export default function TabsLayout() {
 
 const styles = StyleSheet.create({
   tabBar: {
-    height: 102,
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
+    height: Platform.OS === 'ios' ? 88 : 70,
+    paddingTop: 8,
+    paddingBottom: Platform.OS === 'ios' ? 28 : 10,
+    backgroundColor: Colors.surfaceContainerLowest,
     borderTopWidth: 1,
-    borderTopColor: 'rgba(255,255,255,0.1)',
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    backgroundColor: 'transparent',
-    paddingTop: 12,
-    paddingBottom: 14,
-    elevation: 30,
-    shadowColor: '#000000',
-    shadowOffset: { width: 0, height: -24 },
-    shadowOpacity: 0.4,
-    shadowRadius: 48,
+    borderTopColor: 'rgba(255,255,255,0.08)',
+    elevation: 0,
   },
   tabBarItem: {
-    justifyContent: 'flex-end',
-    paddingTop: 8,
-    paddingBottom: 6,
+    paddingTop: 4,
+    paddingBottom: 4,
   },
   tabBarIcon: {
-    marginTop: 6,
-    marginBottom: 0,
+    marginBottom: 2,
+  },
+  tabBarLabel: {
+    fontFamily: FontFamily.bodyMedium,
+    fontSize: 11,
+    marginTop: 2,
   },
   iconPill: {
-    minWidth: 34,
-    height: 30,
-    paddingHorizontal: 10,
-    borderRadius: 14,
+    width: 48,
+    height: 32,
+    borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
   },
   iconPillActive: {
-    backgroundColor: 'rgba(61,142,255,0.1)',
-  },
-  tabBackgroundWrap: {
-    flex: 1,
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    overflow: 'hidden',
-  },
-  tabBackgroundOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(17,19,24,0.6)',
+    backgroundColor: 'rgba(61,142,255,0.15)',
   },
 })
