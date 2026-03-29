@@ -93,7 +93,10 @@ export function PoliceDevicesPage() {
   }
 
   const containerStyle: CSSProperties = {
-    padding: '32px',
+    paddingTop: '32px',
+    paddingBottom: '32px',
+    paddingLeft: '32px',
+    paddingRight: '32px',
     maxWidth: '1600px',
     margin: '0 auto',
   }

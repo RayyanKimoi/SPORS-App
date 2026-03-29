@@ -298,7 +298,7 @@ export default function App() {
           to { transform: rotate(360deg); }
         }
       `}</style>
-      <BrowserRouter>
+      <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <AuthProvider>
           <AppRoutes />
         </AuthProvider>
