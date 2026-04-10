@@ -131,7 +131,7 @@ export function PoliceReportsPage() {
 
   const filterButtonStyle = (isActive: boolean): CSSProperties => ({
     padding: '10px 20px',
-    borderRadius: '10px',
+    borderRadius: '0px',
     backgroundColor: isActive ? Colors.primary : Colors.surfaceContainerHigh,
     color: isActive ? Colors.onPrimary : Colors.onSurfaceVariant,
     border: `1px solid ${isActive ? Colors.primary : Colors.outlineVariant}`,
@@ -189,7 +189,7 @@ export function PoliceReportsPage() {
           </span>
           Lost Device Reports
         </h1>
-        <p style={{ fontSize: '15px', color: Colors.onSurfaceVariant }}>
+        <p style={{ fontSize: '14px', color: Colors.onSurfaceVariant }}>
           {reports.length} report{reports.length !== 1 ? 's' : ''} filed
         </p>
       </div>
@@ -257,7 +257,7 @@ export function PoliceReportsPage() {
                   <span
                     style={{
                       padding: '6px 14px',
-                      borderRadius: '8px',
+                      borderRadius: '0px',
                       backgroundColor: report.is_active ? `${Colors.error}20` : `${Colors.secondary}20`,
                       color: report.is_active ? Colors.error : Colors.secondary,
                       fontSize: '12px',
@@ -273,7 +273,7 @@ export function PoliceReportsPage() {
                   <div style={{
                     padding: '12px 16px',
                     backgroundColor: Colors.surfaceContainerHigh,
-                    borderRadius: '10px',
+                    borderRadius: '0px',
                     marginBottom: '12px',
                   }}>
                     <div style={{ fontSize: '11px', color: Colors.outline, marginBottom: '4px', fontWeight: 600, textTransform: 'uppercase' }}>
@@ -376,14 +376,14 @@ export function PoliceReportsPage() {
                   <div style={{ fontSize: '12px', color: Colors.outline, marginBottom: '8px', textTransform: 'uppercase', fontWeight: 600 }}>
                     Owner Information
                   </div>
-                  <div style={{ fontSize: '15px', color: Colors.onSurface, marginBottom: '6px' }}>
+                  <div style={{ fontSize: '14px', color: Colors.onSurface, marginBottom: '6px' }}>
                     <span className="material-icons" style={{ fontSize: '18px', verticalAlign: 'middle', marginRight: '8px', color: Colors.primary }}>
                       person
                     </span>
                     {selectedReport.profiles?.full_name || 'Unknown'}
                   </div>
                   {selectedReport.profiles?.phone_number && (
-                    <div style={{ fontSize: '15px', color: Colors.onSurface, marginBottom: '12px' }}>
+                    <div style={{ fontSize: '14px', color: Colors.onSurface, marginBottom: '12px' }}>
                       <span className="material-icons" style={{ fontSize: '18px', verticalAlign: 'middle', marginRight: '8px', color: Colors.primary }}>
                         phone
                       </span>
@@ -408,7 +408,7 @@ export function PoliceReportsPage() {
                       <div style={{ 
                         padding: '16px', 
                         backgroundColor: Colors.surfaceContainerHigh, 
-                        borderRadius: '12px',
+                        borderRadius: '0px',
                         border: `2px solid ${Colors.primary}40`,
                       }}>
                         <div style={{ fontSize: '11px', color: Colors.outline, marginBottom: '4px', fontWeight: 600 }}>
@@ -435,7 +435,7 @@ export function PoliceReportsPage() {
                         lineHeight: '1.6',
                         padding: '14px',
                         backgroundColor: Colors.surfaceContainerHigh,
-                        borderRadius: '10px',
+                        borderRadius: '0px',
                       }}>
                         {selectedReport.incident_description}
                       </div>
@@ -465,7 +465,7 @@ export function PoliceReportsPage() {
                             backgroundColor: Colors.secondary,
                             color: Colors.onPrimary,
                             border: 'none',
-                            borderRadius: '10px',
+                            borderRadius: '0px',
                             cursor: 'pointer',
                             fontSize: '14px',
                             fontWeight: 600,

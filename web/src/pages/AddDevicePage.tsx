@@ -108,27 +108,21 @@ export function AddDevicePage() {
 
   const headerStyle: CSSProperties = {
     marginBottom: '40px',
-    background: `linear-gradient(135deg, ${Colors.primary}10 0%, transparent 100%)`,
-    padding: '32px',
-    borderRadius: '20px',
-    border: `1px solid ${Colors.primary}20`,
   }
 
   const titleStyle: CSSProperties = {
     fontSize: '32px',
-    fontWeight: 700,
-    color: Colors.onSurface,
-    marginBottom: '12px',
-    letterSpacing: '-0.5px',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '12px',
+    fontWeight: 600,
+    color: '#000',
+    marginBottom: '8px',
+    letterSpacing: '-0.02em',
+    fontFamily: "'Space Grotesk', system-ui, sans-serif",
   }
 
   const subtitleStyle: CSSProperties = {
-    color: Colors.onSurfaceVariant,
-    fontSize: '16px',
-    lineHeight: '1.5',
+    color: '#737373',
+    fontSize: '14px',
+    lineHeight: '1.6',
   }
 
   const formStyle: CSSProperties = {
@@ -146,22 +140,24 @@ export function AddDevicePage() {
   const selectStyle: CSSProperties = {
     width: '100%',
     padding: '12px 16px',
-    backgroundColor: Colors.surfaceContainerHigh,
-    border: `1px solid ${Colors.outlineVariant}`,
-    borderRadius: '12px',
-    color: Colors.onSurface,
-    fontSize: '16px',
+    backgroundColor: '#fff',
+    border: '1px solid #E5E5E5',
+    borderRadius: '0px',
+    color: '#000',
+    fontSize: '14px',
     cursor: 'pointer',
+    fontFamily: "'Inter', system-ui, sans-serif",
   }
 
   const labelStyle: CSSProperties = {
-    fontSize: '14px',
-    fontWeight: 700,
-    color: Colors.onSurface,
-    marginBottom: '10px',
+    fontSize: '11px',
+    fontWeight: 500,
+    color: '#737373',
+    marginBottom: '6px',
     display: 'block',
     textTransform: 'uppercase',
-    letterSpacing: '0.5px',
+    letterSpacing: '0.15em',
+    fontFamily: "'JetBrains Mono', monospace",
   }
 
   const colorGridStyle: CSSProperties = {
@@ -172,22 +168,20 @@ export function AddDevicePage() {
   }
 
   const colorSwatchStyle = (colorValue: string, isSelected: boolean): CSSProperties => ({
-    width: '48px',
-    height: '48px',
-    borderRadius: '50%',
+    width: '40px',
+    height: '40px',
     backgroundColor: colorValue,
     cursor: 'pointer',
-    border: isSelected ? `4px solid ${Colors.primary}` : `3px solid ${Colors.outline}`,
-    transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-    boxShadow: isSelected ? `0 4px 12px ${Colors.primary}40` : 'none',
+    border: isSelected ? '3px solid #000' : '1px solid #E5E5E5',
+    transition: 'all 0.2s ease',
   })
 
   const errorStyle: CSSProperties = {
     backgroundColor: `${Colors.error}20`,
     color: Colors.error,
     padding: '16px 20px',
-    borderRadius: '12px',
-    fontSize: '15px',
+    borderRadius: '0px',
+    fontSize: '14px',
     border: `2px solid ${Colors.error}40`,
     display: 'flex',
     alignItems: 'center',
@@ -216,15 +210,9 @@ export function AddDevicePage() {
   return (
     <div style={containerStyle}>
       <div style={headerStyle}>
-        <h1 style={titleStyle}>
-          <span className="material-icons" style={{ fontSize: '36px', color: Colors.primary }}>
-            add_circle
-          </span>
-          Register New Device
-        </h1>
-        <p style={subtitleStyle}>
-          Add your device to SPORS to protect it and enable recovery features
-        </p>
+        <span style={{ display: 'block', fontFamily: "'JetBrains Mono', monospace", fontSize: '11px', letterSpacing: '0.2em', color: '#A3A3A3', textTransform: 'uppercase', marginBottom: '8px' }}>[ 02 — Register ]</span>
+        <h1 style={titleStyle}>Register New Device</h1>
+        <p style={subtitleStyle}>Add your device to SPORS to protect it and enable recovery features</p>
       </div>
 
       <Card variant="elevated" padding="32px">
@@ -383,15 +371,15 @@ export function AddDevicePage() {
             style={{
               padding: '20px',
               marginTop: '8px',
-              background: `linear-gradient(135deg, ${Colors.tertiary}08 0%, transparent 100%)`,
+              backgroundColor: '#FAFAFA',
             }}
           >
             <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-start' }}>
               <div style={{
                 width: '40px',
                 height: '40px',
-                borderRadius: '10px',
-                background: `linear-gradient(135deg, ${Colors.tertiary}30 0%, ${Colors.tertiary}10 100%)`,
+                borderRadius: '0px',
+                backgroundColor: '#F5F5F5',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -402,7 +390,7 @@ export function AddDevicePage() {
                 </span>
               </div>
               <div>
-                <p style={{ color: Colors.onSurface, fontSize: '15px', marginBottom: '12px', fontWeight: 700 }}>
+                <p style={{ color: Colors.onSurface, fontSize: '14px', marginBottom: '12px', fontWeight: 700 }}>
                   How to find your IMEI:
                 </p>
                 <ul
@@ -423,10 +411,10 @@ export function AddDevicePage() {
           </Card>
 
           <div style={actionsStyle}>
-            <Button variant="ghost" onClick={() => navigate('/devices')} style={{ border: `2px solid ${Colors.outlineVariant}` }} icon="close">
+            <Button variant="ghost" onClick={() => navigate('/devices')} style={{ border: '1px solid #E5E5E5' }} icon="close">
               Cancel
             </Button>
-            <Button type="submit" loading={loading} disabled={!imei1Valid || !imei2Valid} icon="check_circle" size="large">
+            <Button type="submit" variant="outline" loading={loading} disabled={!imei1Valid || !imei2Valid} icon="check_circle" size="large">
               Register Device
             </Button>
           </div>

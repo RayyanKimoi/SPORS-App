@@ -143,7 +143,7 @@ export function PoliceSearchPage() {
 
   const filterButtonStyle = (isActive: boolean): CSSProperties => ({
     padding: '8px 18px',
-    borderRadius: '10px',
+    borderRadius: '0px',
     backgroundColor: isActive ? Colors.primary : Colors.surfaceContainerHigh,
     color: isActive ? Colors.onPrimary : Colors.onSurfaceVariant,
     border: `1px solid ${isActive ? Colors.primary : Colors.outlineVariant}`,
@@ -197,7 +197,7 @@ export function PoliceSearchPage() {
           </span>
           Advanced Search
         </h1>
-        <p style={{ fontSize: '15px', color: Colors.onSurfaceVariant }}>
+        <p style={{ fontSize: '14px', color: Colors.onSurfaceVariant }}>
           Search by IMEI, serial number, complaint number, phone number, or owner name
         </p>
       </div>
@@ -288,7 +288,7 @@ export function PoliceSearchPage() {
                     style={{
                       width: '56px',
                       height: '56px',
-                      borderRadius: '14px',
+                      borderRadius: '0px',
                       backgroundColor: `${getTypeColor(result.type)}20`,
                       display: 'flex',
                       alignItems: 'center',
@@ -314,7 +314,7 @@ export function PoliceSearchPage() {
                       <span
                         style={{
                           padding: '4px 12px',
-                          borderRadius: '6px',
+                          borderRadius: '0px',
                           backgroundColor: `${getTypeColor(result.type)}20`,
                           color: getTypeColor(result.type),
                           fontSize: '11px',

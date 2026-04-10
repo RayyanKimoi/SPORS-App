@@ -165,7 +165,7 @@ export function PoliceChatsPage() {
     display: 'flex',
     flexDirection: 'column',
     backgroundColor: Colors.surfaceContainer,
-    borderRadius: '16px',
+    borderRadius: '0px',
     border: `1px solid ${Colors.outlineVariant}`,
     overflow: 'hidden',
   }
@@ -250,7 +250,7 @@ export function PoliceChatsPage() {
                     style={{
                       fontSize: '11px',
                       padding: '3px 8px',
-                      borderRadius: '6px',
+                      borderRadius: '0px',
                       backgroundColor: room.is_active ? `${Colors.secondary}20` : `${Colors.error}20`,
                       color: room.is_active ? Colors.secondary : Colors.error,
                       fontWeight: 600,
@@ -331,7 +331,7 @@ export function PoliceChatsPage() {
                   {analysis && (
                     <span style={{
                       padding: '4px 12px',
-                      borderRadius: '20px',
+                      borderRadius: '0px',
                       fontSize: '12px',
                       fontWeight: 700,
                       backgroundColor: analysis.riskLevel === 'High' ? Colors.errorContainer : analysis.riskLevel === 'Medium' ? `${Colors.secondary}30` : `${Colors.primary}30`,
@@ -349,14 +349,14 @@ export function PoliceChatsPage() {
                     <p style={{ marginTop: '8px', fontSize: '14px', color: Colors.onSurfaceVariant }}>Analyzing conversation with Groq AI...</p>
                   </div>
                 ) : analysisError ? (
-                  <div style={{ padding: '12px', borderRadius: '8px', backgroundColor: `${Colors.error}15`, color: Colors.error, fontSize: '14px', textAlign: 'center' }}>
+                  <div style={{ padding: '12px', borderRadius: '0px', backgroundColor: `${Colors.error}15`, color: Colors.error, fontSize: '14px', textAlign: 'center' }}>
                     {analysisError}
                   </div>
                 ) : analysis && (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                     <div>
                       <div style={{ fontSize: '13px', fontWeight: 700, color: Colors.onSurfaceVariant, marginBottom: '6px', textTransform: 'uppercase' }}>Summary</div>
-                      <p style={{ fontSize: '15px', color: Colors.onSurface, lineHeight: '1.5' }}>{analysis.summary}</p>
+                      <p style={{ fontSize: '14px', color: Colors.onSurface, lineHeight: '1.5' }}>{analysis.summary}</p>
                     </div>
 
                     {analysis.redFlags.length > 0 && (
@@ -387,7 +387,7 @@ export function PoliceChatsPage() {
                       )}
                     </div>
 
-                    <div style={{ padding: '12px', borderRadius: '8px', backgroundColor: Colors.surfaceContainerHighest, borderLeft: `4px solid ${Colors.primary}` }}>
+                    <div style={{ padding: '12px', borderRadius: '0px', backgroundColor: Colors.surfaceContainerHighest, borderLeft: `4px solid ${Colors.primary}` }}>
                       <div style={{ fontSize: '13px', fontWeight: 700, color: Colors.primary, marginBottom: '4px', textTransform: 'uppercase' }}>Officer Recommendation</div>
                       <p style={{ fontSize: '14px', color: Colors.onSurface }}>{analysis.recommendation}</p>
                     </div>

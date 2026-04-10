@@ -109,35 +109,30 @@ export function ProfilePage() {
   const headerStyle: CSSProperties = {
     textAlign: 'center',
     marginBottom: '48px',
-    background: `linear-gradient(135deg, ${Colors.primary}15 0%, transparent 100%)`,
-    padding: '48px 32px',
-    borderRadius: '24px',
-    border: `1px solid ${Colors.primary}20`,
   }
 
   const avatarContainerStyle: CSSProperties = {
-    width: '120px',
-    height: '120px',
-    borderRadius: '50%',
-    background: `linear-gradient(135deg, ${Colors.primary} 0%, ${Colors.secondary} 100%)`,
+    width: '100px',
+    height: '100px',
+    backgroundColor: '#000',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    margin: '0 auto 24px',
-    fontSize: '54px',
-    fontWeight: 800,
-    color: Colors.onPrimary,
-    border: `4px solid ${Colors.surfaceContainer}`,
-    boxShadow: `0 8px 24px ${Colors.primary}40`,
-    letterSpacing: '1px',
+    margin: '0 auto 20px',
+    fontSize: '36px',
+    fontWeight: 700,
+    color: '#fff',
+    fontFamily: "'Space Grotesk', system-ui, sans-serif",
+    letterSpacing: '0.05em',
   }
 
   const nameStyle: CSSProperties = {
-    fontSize: '36px',
-    fontWeight: 700,
-    color: Colors.onSurface,
-    marginBottom: '8px',
-    letterSpacing: '-0.5px',
+    fontSize: '28px',
+    fontWeight: 600,
+    color: '#000',
+    marginBottom: '4px',
+    fontFamily: "'Space Grotesk', system-ui, sans-serif",
+    letterSpacing: '-0.02em',
   }
 
   const emailStyle: CSSProperties = {
@@ -164,48 +159,47 @@ export function ProfilePage() {
     padding: '32px 24px',
   }
 
-  const statIconStyle = (color: string): CSSProperties => ({
-    width: '64px',
-    height: '64px',
-    borderRadius: '16px',
-    background: `linear-gradient(135deg, ${color}30 0%, ${color}10 100%)`,
+  const statIconStyle = (): CSSProperties => ({
+    width: '48px',
+    height: '48px',
+    backgroundColor: '#F5F5F5',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    margin: '0 auto 16px',
-    border: `2px solid ${color}40`,
+    margin: '0 auto 12px',
+    border: '1px solid #E5E5E5',
   })
 
   const statValueStyle: CSSProperties = {
-    fontSize: '48px',
-    fontWeight: 800,
-    color: Colors.onSurface,
-    marginBottom: '8px',
-    letterSpacing: '-1.5px',
+    fontSize: '36px',
+    fontWeight: 600,
+    color: '#000',
+    marginBottom: '4px',
+    fontFamily: "'Space Grotesk', system-ui, sans-serif",
   }
 
   const statLabelStyle: CSSProperties = {
-    fontSize: '15px',
-    color: Colors.onSurfaceVariant,
-    fontWeight: 600,
+    fontSize: '11px',
+    color: '#737373',
+    fontWeight: 500,
     textTransform: 'uppercase',
-    letterSpacing: '0.5px',
+    letterSpacing: '0.15em',
+    fontFamily: "'JetBrains Mono', monospace",
   }
 
   const sectionTitleStyle: CSSProperties = {
-    fontSize: '24px',
-    fontWeight: 700,
-    color: Colors.onSurface,
-    marginBottom: '24px',
-    letterSpacing: '-0.3px',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '12px',
+    fontSize: '11px',
+    fontWeight: 500,
+    color: '#A3A3A3',
+    marginBottom: '16px',
+    letterSpacing: '0.2em',
+    textTransform: 'uppercase',
+    fontFamily: "'JetBrains Mono', monospace",
   }
 
   const messageStyle: CSSProperties = {
     padding: '16px 20px',
-    borderRadius: '12px',
+    borderRadius: '0px',
     marginBottom: '20px',
     backgroundColor: message.type === 'error' ? `${Colors.error}20` : `${Colors.tertiary}20`,
     color: message.type === 'error' ? Colors.error : Colors.tertiary,
@@ -236,42 +230,31 @@ export function ProfilePage() {
 
       <div style={gridStyle}>
         <Card variant="elevated" style={statCardStyle}>
-          <div style={statIconStyle(Colors.primary)}>
-            <span className="material-icons" style={{ fontSize: '32px', color: Colors.primary }}>
-              devices
-            </span>
+          <div style={statIconStyle()}>
+            <span className="material-icons" style={{ fontSize: '24px', color: '#000' }}>devices</span>
           </div>
           <div style={statValueStyle}>{devices.length}</div>
           <div style={statLabelStyle}>Devices</div>
         </Card>
 
         <Card variant="elevated" style={statCardStyle}>
-          <div style={statIconStyle(Colors.error)}>
-            <span className="material-icons" style={{ fontSize: '32px', color: Colors.error }}>
-              report
-            </span>
+          <div style={statIconStyle()}>
+            <span className="material-icons" style={{ fontSize: '24px', color: '#000' }}>report</span>
           </div>
           <div style={statValueStyle}>{reportsCount}</div>
           <div style={statLabelStyle}>Reports</div>
         </Card>
 
         <Card variant="elevated" style={statCardStyle}>
-          <div style={statIconStyle(Colors.secondary)}>
-            <span className="material-icons" style={{ fontSize: '32px', color: Colors.secondary }}>
-              verified
-            </span>
+          <div style={statIconStyle()}>
+            <span className="material-icons" style={{ fontSize: '24px', color: '#000' }}>verified</span>
           </div>
           <div style={statValueStyle}>{devices.filter(d => d.status === 'registered').length}</div>
           <div style={statLabelStyle}>Protected</div>
         </Card>
       </div>
 
-      <h2 style={sectionTitleStyle}>
-        <span className="material-icons" style={{ fontSize: '28px', color: Colors.primary }}>
-          account_circle
-        </span>
-        Profile Information
-      </h2>
+      <h2 style={sectionTitleStyle}>[ Profile Information ]</h2>
       <Card variant="elevated" style={{ marginBottom: '32px', padding: '32px' }}>
         {message.text && (
           <div style={messageStyle}>
@@ -340,12 +323,7 @@ export function ProfilePage() {
         )}
       </Card>
 
-      <h2 style={sectionTitleStyle}>
-        <span className="material-icons" style={{ fontSize: '28px', color: Colors.error }}>
-          lock
-        </span>
-        Security
-      </h2>
+      <h2 style={sectionTitleStyle}>[ Security ]</h2>
       <Card variant="elevated" style={{ marginBottom: '32px', padding: '32px' }}>
         {isChangingPassword ? (
           <form onSubmit={handleChangePassword}>
@@ -381,14 +359,9 @@ export function ProfilePage() {
         )}
       </Card>
 
-      <h2 style={sectionTitleStyle}>
-        <span className="material-icons" style={{ fontSize: '28px', color: Colors.error }}>
-          power_settings_new
-        </span>
-        Account Actions
-      </h2>
+      <h2 style={sectionTitleStyle}>[ Account Actions ]</h2>
       <Card variant="elevated" style={{ padding: '32px' }}>
-        <p style={{ color: Colors.onSurfaceVariant, marginBottom: '24px', fontSize: '15px', lineHeight: '1.6' }}>
+        <p style={{ color: Colors.onSurfaceVariant, marginBottom: '24px', fontSize: '14px', lineHeight: '1.6' }}>
           Sign out of your account. You can always sign back in later.
         </p>
         <Button onClick={handleSignOut} variant="danger" icon="logout" fullWidth>

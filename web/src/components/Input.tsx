@@ -1,5 +1,4 @@
 import { CSSProperties, InputHTMLAttributes } from 'react'
-import { Colors } from '../lib/colors'
 
 type InputProps = InputHTMLAttributes<HTMLInputElement> & {
   label?: string
@@ -22,27 +21,28 @@ export function Input({
   const containerStyle: CSSProperties = {
     display: 'flex',
     flexDirection: 'column',
-    gap: '8px',
+    gap: '6px',
     width: fullWidth ? '100%' : 'auto',
   }
 
   const labelStyle: CSSProperties = {
-    fontSize: '14px',
-    fontWeight: 600,
-    color: Colors.onSurface,
-    letterSpacing: '0.1px',
+    fontSize: '11px',
+    fontWeight: 500,
+    color: '#737373',
+    letterSpacing: '0.15em',
+    textTransform: 'uppercase',
+    fontFamily: "'JetBrains Mono', monospace",
   }
 
   const inputWrapperStyle: CSSProperties = {
     display: 'flex',
     alignItems: 'center',
-    gap: '12px',
-    backgroundColor: Colors.surfaceContainerHigh,
-    borderRadius: '12px',
-    border: error ? `2px solid ${Colors.error}` : `2px solid ${Colors.outlineVariant}`,
-    padding: '14px 18px',
-    transition: 'all 0.2s ease',
-    position: 'relative',
+    gap: '10px',
+    backgroundColor: '#fff',
+    borderRadius: '0px',
+    border: error ? '1.5px solid #FF4E4E' : '1px solid #E5E5E5',
+    padding: '12px 16px',
+    transition: 'border-color 0.3s ease',
   }
 
   const inputStyle: CSSProperties = {
@@ -50,26 +50,27 @@ export function Input({
     backgroundColor: 'transparent',
     border: 'none',
     outline: 'none',
-    fontSize: '15px',
-    color: Colors.onSurface,
-    WebkitTextFillColor: Colors.onSurface,
-    fontFamily: 'Inter, system-ui, sans-serif',
-    fontWeight: 500,
+    fontSize: '14px',
+    color: '#000',
+    WebkitTextFillColor: '#000',
+    fontFamily: "'Inter', system-ui, sans-serif",
+    fontWeight: 400,
     ...style,
   }
 
   const errorStyle: CSSProperties = {
-    fontSize: '13px',
-    color: Colors.error,
+    fontSize: '12px',
+    color: '#FF4E4E',
     fontWeight: 500,
     display: 'flex',
     alignItems: 'center',
-    gap: '6px',
+    gap: '4px',
+    fontFamily: "'JetBrains Mono', monospace",
   }
 
   const helperTextStyle: CSSProperties = {
-    fontSize: '13px',
-    color: Colors.onSurfaceVariant,
+    fontSize: '12px',
+    color: '#A3A3A3',
   }
 
   return (
@@ -77,7 +78,7 @@ export function Input({
       {label && <label style={labelStyle}>{label}</label>}
       <div style={inputWrapperStyle} className="input-wrapper">
         {icon && (
-          <span className="material-icons" style={{ color: Colors.primary, fontSize: '22px' }}>
+          <span className="material-icons" style={{ color: '#A3A3A3', fontSize: '20px' }}>
             {icon}
           </span>
         )}
@@ -85,7 +86,7 @@ export function Input({
       </div>
       {error && (
         <span style={errorStyle}>
-          <span className="material-icons" style={{ fontSize: '16px' }}>error</span>
+          <span className="material-icons" style={{ fontSize: '14px' }}>error</span>
           {error}
         </span>
       )}

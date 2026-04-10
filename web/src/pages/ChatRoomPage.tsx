@@ -221,7 +221,7 @@ export function ChatRoomPage() {
     color: Colors.onSurfaceVariant,
     cursor: 'pointer',
     padding: '8px',
-    borderRadius: '8px',
+    borderRadius: '0px',
   }
 
   const messagesContainerStyle: CSSProperties = {
@@ -266,9 +266,9 @@ export function ChatRoomPage() {
     padding: '12px 16px',
     backgroundColor: Colors.surfaceContainerHigh,
     border: `1px solid ${Colors.outlineVariant}`,
-    borderRadius: '24px',
+    borderRadius: '0px',
     color: Colors.onSurface,
-    fontSize: '15px',
+    fontSize: '14px',
     outline: 'none',
   }
 

@@ -95,7 +95,7 @@ export function PoliceDashboardPage() {
         description: `${report.devices?.make} ${report.devices?.model}`,
         timestamp: report.reported_at,
         icon: 'report',
-        color: Colors.error,
+        color: '#FF4E4E',
       })
     })
 
@@ -114,7 +114,7 @@ export function PoliceDashboardPage() {
         description: `${beacon.devices?.make} ${beacon.devices?.model}`,
         timestamp: beacon.reported_at,
         icon: 'my_location',
-        color: Colors.secondary,
+        color: '#000',
       })
     })
 
@@ -138,17 +138,16 @@ export function PoliceDashboardPage() {
 
   const titleStyle: CSSProperties = {
     fontSize: '32px',
-    fontWeight: 700,
-    color: Colors.onSurface,
-    marginBottom: '8px',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '12px',
+    fontWeight: 600,
+    color: '#000',
+    marginBottom: '4px',
+    fontFamily: "'Space Grotesk', system-ui, sans-serif",
+    letterSpacing: '-0.02em',
   }
 
   const subtitleStyle: CSSProperties = {
-    fontSize: '16px',
-    color: Colors.onSurfaceVariant,
+    fontSize: '14px',
+    color: '#737373',
   }
 
   const gridStyle: CSSProperties = {
@@ -186,10 +185,8 @@ export function PoliceDashboardPage() {
   if (loading) {
     return (
       <div style={{ ...containerStyle, textAlign: 'center', paddingTop: '120px' }}>
-        <span className="material-icons" style={{ fontSize: '48px', color: Colors.primary, animation: 'spin 1s linear infinite' }}>
-          sync
-        </span>
-        <p style={{ marginTop: '16px', color: Colors.onSurfaceVariant }}>Loading dashboard...</p>
+        <div style={{ width: '24px', height: '24px', border: '2px solid #E5E5E5', borderTopColor: '#000', borderRadius: '50%', animation: 'spin 0.8s linear infinite', margin: '0 auto 16px' }} />
+        <p style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '11px', color: '#A3A3A3', letterSpacing: '0.2em', textTransform: 'uppercase' }}>Loading dashboard...</p>
       </div>
     )
   }
@@ -197,12 +194,8 @@ export function PoliceDashboardPage() {
   return (
     <div style={containerStyle}>
       <div style={headerStyle}>
-        <h1 style={titleStyle}>
-          <span className="material-icons" style={{ fontSize: '40px', color: Colors.primary }}>
-            local_police
-          </span>
-          Police Command Center
-        </h1>
+        <span style={{ display: 'block', fontFamily: "'JetBrains Mono', monospace", fontSize: '11px', letterSpacing: '0.2em', color: '#A3A3A3', textTransform: 'uppercase', marginBottom: '8px' }}>[ Police — Command Center ]</span>
+        <h1 style={titleStyle}>Dashboard</h1>
         <p style={subtitleStyle}>Real-time monitoring and device recovery operations</p>
       </div>
 
@@ -217,7 +210,7 @@ export function PoliceDashboardPage() {
             <div style={{ 
               width: '56px', 
               height: '56px', 
-              borderRadius: '14px', 
+              borderRadius: '0px', 
               backgroundColor: `${Colors.error}20`, 
               display: 'flex', 
               alignItems: 'center', 
@@ -242,7 +235,7 @@ export function PoliceDashboardPage() {
             <div style={{ 
               width: '56px', 
               height: '56px', 
-              borderRadius: '14px', 
+              borderRadius: '0px', 
               backgroundColor: `${Colors.primary}20`, 
               display: 'flex', 
               alignItems: 'center', 
@@ -267,7 +260,7 @@ export function PoliceDashboardPage() {
             <div style={{ 
               width: '56px', 
               height: '56px', 
-              borderRadius: '14px', 
+              borderRadius: '0px', 
               backgroundColor: `${Colors.tertiary}20`, 
               display: 'flex', 
               alignItems: 'center', 
@@ -291,7 +284,7 @@ export function PoliceDashboardPage() {
             <div style={{ 
               width: '56px', 
               height: '56px', 
-              borderRadius: '14px', 
+              borderRadius: '0px', 
               backgroundColor: `${Colors.secondary}20`, 
               display: 'flex', 
               alignItems: 'center', 
@@ -315,7 +308,7 @@ export function PoliceDashboardPage() {
             <div style={{ 
               width: '56px', 
               height: '56px', 
-              borderRadius: '14px', 
+              borderRadius: '0px', 
               backgroundColor: `${Colors.accent}20`, 
               display: 'flex', 
               alignItems: 'center', 
@@ -339,7 +332,7 @@ export function PoliceDashboardPage() {
             <div style={{ 
               width: '56px', 
               height: '56px', 
-              borderRadius: '14px', 
+              borderRadius: '0px', 
               backgroundColor: `${Colors.primary}20`, 
               display: 'flex', 
               alignItems: 'center', 
@@ -373,7 +366,7 @@ export function PoliceDashboardPage() {
                 <div style={{
                   width: '40px',
                   height: '40px',
-                  borderRadius: '10px',
+                  borderRadius: '0px',
                   backgroundColor: `${activity.color}20`,
                   display: 'flex',
                   alignItems: 'center',

@@ -1,11 +1,11 @@
 import { CSSProperties, useEffect, useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { Colors } from '../lib/colors'
 import { useAuth } from '../hooks/useAuth'
 import { supabase } from '../lib/supabase'
+import { Shield } from 'lucide-react'
 
 const navItems = [
-  { path: '/', icon: 'home', label: 'Home' },
+  { path: '/dashboard', icon: 'home', label: 'Home' },
   { path: '/devices', icon: 'devices', label: 'Devices' },
   { path: '/add-device', icon: 'add_circle', label: 'Add Device' },
   { path: '/chat', icon: 'chat', label: 'Chat', showBadge: true },
@@ -20,30 +20,27 @@ export function Sidebar() {
   const [unreadCount, setUnreadCount] = useState(0)
 
   const sidebarStyle: CSSProperties = {
-    width: '260px',
+    width: '240px',
     minHeight: '100vh',
-    backgroundColor: Colors.surfaceContainerLow,
+    backgroundColor: '#fff',
     padding: '24px 16px',
     display: 'flex',
     flexDirection: 'column',
-    borderRight: `1px solid ${Colors.outlineVariant}`,
+    borderRight: '1px solid #E5E5E5',
   }
 
   const logoStyle: CSSProperties = {
-    fontSize: '24px',
-    fontWeight: 700,
-    color: Colors.primary,
-    marginBottom: '40px',
     display: 'flex',
     alignItems: 'center',
-    gap: '12px',
-    padding: '0 8px',
+    gap: '10px',
+    marginBottom: '48px',
+    padding: '0 12px',
   }
 
   const navStyle: CSSProperties = {
     display: 'flex',
     flexDirection: 'column',
-    gap: '8px',
+    gap: '2px',
     flex: 1,
   }
 
@@ -51,44 +48,18 @@ export function Sidebar() {
     display: 'flex',
     alignItems: 'center',
     gap: '12px',
-    padding: '12px 16px',
-    borderRadius: '12px',
-    backgroundColor: isActive ? Colors.surfaceContainerHighest : 'transparent',
-    color: isActive ? Colors.primary : Colors.onSurfaceVariant,
+    padding: '10px 12px',
+    borderRadius: '0px',
+    backgroundColor: isActive ? '#000' : 'transparent',
+    color: isActive ? '#fff' : '#737373',
     cursor: 'pointer',
-    transition: 'all 0.2s ease',
-    fontSize: '15px',
-    fontWeight: isActive ? 600 : 400,
+    transition: 'all 0.2s cubic-bezier(0.33, 1, 0.68, 1)',
+    fontSize: '13px',
+    fontWeight: isActive ? 500 : 400,
+    fontFamily: "'Inter', system-ui, sans-serif",
+    letterSpacing: '0.01em',
+    position: 'relative',
   })
-
-  const profileSectionStyle: CSSProperties = {
-    borderTop: `1px solid ${Colors.outlineVariant}`,
-    paddingTop: '16px',
-    marginTop: '16px',
-  }
-
-  const profileCardStyle: CSSProperties = {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '12px',
-    padding: '12px',
-    borderRadius: '12px',
-    backgroundColor: Colors.surfaceContainer,
-    marginBottom: '12px',
-  }
-
-  const avatarStyle: CSSProperties = {
-    width: '40px',
-    height: '40px',
-    borderRadius: '50%',
-    backgroundColor: Colors.primary,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    color: Colors.onPrimary,
-    fontWeight: 600,
-    fontSize: '16px',
-  }
 
   const initials = profile?.full_name
     ?.split(' ')
@@ -97,13 +68,11 @@ export function Sidebar() {
     .toUpperCase()
     .slice(0, 2) || 'SP'
 
-  // Fetch unread message count
   useEffect(() => {
     if (!user?.id) return
 
     const fetchUnreadCount = async () => {
       try {
-        // Get rooms where user is owner
         const { data: rooms } = await supabase
           .from('chat_rooms')
           .select('id')
@@ -117,7 +86,6 @@ export function Sidebar() {
 
         const roomIds = rooms.map(r => r.id)
         
-        // Count unread messages in those rooms
         const { count } = await supabase
           .from('chat_messages')
           .select('id', { count: 'exact', head: true })
@@ -133,7 +101,6 @@ export function Sidebar() {
 
     fetchUnreadCount()
 
-    // Subscribe to real-time updates
     const channel = supabase
       .channel('unread_messages')
       .on(
@@ -156,34 +123,60 @@ export function Sidebar() {
 
   return (
     <aside style={sidebarStyle}>
+      {/* Logo */}
       <div style={logoStyle}>
-        <span className="material-icons" style={{ fontSize: '28px' }}>
-          security
+        <Shield size={20} strokeWidth={1.5} color="#000" />
+        <span
+          style={{
+            fontFamily: "'Space Grotesk', system-ui, sans-serif",
+            fontWeight: 600,
+            fontSize: '16px',
+            letterSpacing: '0.15em',
+            color: '#000',
+          }}
+        >
+          SPORS
         </span>
-        SPORS
       </div>
+
+      {/* Section label */}
+      <span
+        style={{
+          display: 'block',
+          fontFamily: "'JetBrains Mono', monospace",
+          fontSize: '10px',
+          letterSpacing: '0.2em',
+          color: '#A3A3A3',
+          textTransform: 'uppercase',
+          padding: '0 12px',
+          marginBottom: '12px',
+        }}
+      >
+        Navigation
+      </span>
 
       <nav style={navStyle}>
         {navItems.map((item) => (
           <div
             key={item.path}
-            style={{
-              ...navItemStyle(location.pathname === item.path || location.pathname.startsWith(item.path + '/')),
-              position: 'relative',
-            }}
+            style={navItemStyle(location.pathname === item.path || location.pathname.startsWith(item.path + '/'))}
             onClick={() => navigate(item.path)}
             onMouseEnter={(e) => {
-              if (location.pathname !== item.path) {
-                e.currentTarget.style.backgroundColor = Colors.surfaceContainerHigh
+              const isActive = location.pathname === item.path || location.pathname.startsWith(item.path + '/')
+              if (!isActive) {
+                e.currentTarget.style.backgroundColor = '#F5F5F5'
+                e.currentTarget.style.color = '#000'
               }
             }}
             onMouseLeave={(e) => {
-              if (location.pathname !== item.path) {
+              const isActive = location.pathname === item.path || location.pathname.startsWith(item.path + '/')
+              if (!isActive) {
                 e.currentTarget.style.backgroundColor = 'transparent'
+                e.currentTarget.style.color = '#737373'
               }
             }}
           >
-            <span className="material-icons" style={{ fontSize: '22px' }}>
+            <span className="material-icons" style={{ fontSize: '20px' }}>
               {item.icon}
             </span>
             {item.label}
@@ -191,14 +184,15 @@ export function Sidebar() {
               <span
                 style={{
                   marginLeft: 'auto',
-                  backgroundColor: Colors.error,
-                  color: Colors.onPrimary,
-                  fontSize: '11px',
+                  backgroundColor: '#000',
+                  color: '#fff',
+                  fontSize: '10px',
                   fontWeight: 600,
-                  padding: '2px 8px',
-                  borderRadius: '10px',
-                  minWidth: '20px',
+                  padding: '2px 6px',
+                  borderRadius: '0px',
+                  minWidth: '18px',
                   textAlign: 'center',
+                  fontFamily: "'JetBrains Mono', monospace",
                 }}
               >
                 {unreadCount > 99 ? '99+' : unreadCount}
@@ -208,32 +202,57 @@ export function Sidebar() {
         ))}
       </nav>
 
-      <div style={profileSectionStyle}>
-        <div style={profileCardStyle}>
-          <div style={avatarStyle}>{initials}</div>
+      {/* Bottom profile section */}
+      <div style={{ borderTop: '1px solid #E5E5E5', paddingTop: '16px', marginTop: '16px' }}>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+            padding: '10px 12px',
+            marginBottom: '8px',
+          }}
+        >
+          <div
+            style={{
+              width: '36px',
+              height: '36px',
+              borderRadius: '0px',
+              backgroundColor: '#000',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#fff',
+              fontWeight: 600,
+              fontSize: '13px',
+              fontFamily: "'JetBrains Mono', monospace",
+            }}
+          >
+            {initials}
+          </div>
           <div>
-            <div style={{ fontWeight: 500, color: Colors.onSurface, fontSize: '14px' }}>
+            <div style={{ fontWeight: 500, color: '#000', fontSize: '13px' }}>
               {profile?.full_name || 'SPORS User'}
             </div>
-            <div style={{ fontSize: '12px', color: Colors.onSurfaceVariant }}>
-              {profile?.role === 'police' ? 'Police Officer' : 'User'}
+            <div style={{ fontSize: '11px', color: '#A3A3A3', fontFamily: "'JetBrains Mono', monospace" }}>
+              {profile?.role === 'police' ? 'Officer' : 'User'}
             </div>
           </div>
         </div>
         <div
           style={{
             ...navItemStyle(false),
-            color: Colors.error,
+            color: '#FF4E4E',
           }}
           onClick={signOut}
           onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = Colors.errorContainer
+            e.currentTarget.style.backgroundColor = '#FFF0F0'
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.backgroundColor = 'transparent'
           }}
         >
-          <span className="material-icons" style={{ fontSize: '22px' }}>
+          <span className="material-icons" style={{ fontSize: '20px' }}>
             logout
           </span>
           Sign Out

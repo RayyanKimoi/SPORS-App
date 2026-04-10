@@ -131,7 +131,7 @@ export function PoliceDevicesPage() {
     padding: '12px 20px',
     backgroundColor: Colors.surfaceContainerHigh,
     border: `1px solid ${Colors.outlineVariant}`,
-    borderRadius: '12px',
+    borderRadius: '0px',
   }
 
   const searchInputStyle: CSSProperties = {
@@ -139,13 +139,13 @@ export function PoliceDevicesPage() {
     backgroundColor: 'transparent',
     border: 'none',
     outline: 'none',
-    fontSize: '15px',
+    fontSize: '14px',
     color: Colors.onSurface,
   }
 
   const filterButtonStyle = (isActive: boolean): CSSProperties => ({
     padding: '10px 20px',
-    borderRadius: '10px',
+    borderRadius: '0px',
     backgroundColor: isActive ? Colors.primary : Colors.surfaceContainerHigh,
     color: isActive ? Colors.onPrimary : Colors.onSurfaceVariant,
     border: `1px solid ${isActive ? Colors.primary : Colors.outlineVariant}`,
@@ -203,7 +203,7 @@ export function PoliceDevicesPage() {
           </span>
           Lost & Stolen Devices
         </h1>
-        <p style={{ fontSize: '15px', color: Colors.onSurfaceVariant }}>
+        <p style={{ fontSize: '14px', color: Colors.onSurfaceVariant }}>
           Tracking {filteredDevices.length} device{filteredDevices.length !== 1 ? 's' : ''}
         </p>
       </div>
@@ -289,7 +289,7 @@ export function PoliceDevicesPage() {
                     <span
                       style={{
                         padding: '6px 14px',
-                        borderRadius: '8px',
+                        borderRadius: '0px',
                         backgroundColor: device.status === 'stolen' ? `${Colors.error}20` : `${Colors.tertiary}20`,
                         color: device.status === 'stolen' ? Colors.error : Colors.tertiary,
                         fontSize: '12px',
@@ -320,7 +320,7 @@ export function PoliceDevicesPage() {
                     <div style={{ 
                       padding: '10px 14px', 
                       backgroundColor: Colors.surfaceContainerHigh, 
-                      borderRadius: '8px',
+                      borderRadius: '0px',
                       marginBottom: '12px'
                     }}>
                       <div style={{ fontSize: '12px', color: Colors.outline, marginBottom: '4px' }}>
@@ -345,7 +345,7 @@ export function PoliceDevicesPage() {
                           backgroundColor: Colors.secondary,
                           color: Colors.onPrimary,
                           border: 'none',
-                          borderRadius: '10px',
+                          borderRadius: '0px',
                           cursor: 'pointer',
                           fontSize: '14px',
                           fontWeight: 600,
@@ -369,7 +369,7 @@ export function PoliceDevicesPage() {
                           backgroundColor: Colors.primary,
                           color: Colors.onPrimary,
                           border: 'none',
-                          borderRadius: '10px',
+                          borderRadius: '0px',
                           cursor: 'pointer',
                           fontSize: '14px',
                           fontWeight: 600,
@@ -439,14 +439,14 @@ export function PoliceDevicesPage() {
                   <div style={{ fontSize: '12px', color: Colors.outline, marginBottom: '8px', textTransform: 'uppercase', fontWeight: 600 }}>
                     Owner Information
                   </div>
-                  <div style={{ fontSize: '15px', color: Colors.onSurface, marginBottom: '6px' }}>
+                  <div style={{ fontSize: '14px', color: Colors.onSurface, marginBottom: '6px' }}>
                     <span className="material-icons" style={{ fontSize: '18px', verticalAlign: 'middle', marginRight: '8px', color: Colors.primary }}>
                       person
                     </span>
                     {selectedDevice.profiles?.full_name || 'Unknown'}
                   </div>
                   {selectedDevice.profiles?.phone_number && (
-                    <div style={{ fontSize: '15px', color: Colors.onSurface }}>
+                    <div style={{ fontSize: '14px', color: Colors.onSurface }}>
                       <span className="material-icons" style={{ fontSize: '18px', verticalAlign: 'middle', marginRight: '8px', color: Colors.primary }}>
                         phone
                       </span>
@@ -485,7 +485,7 @@ export function PoliceDevicesPage() {
                       {selectedDevice.lost_reports[0].police_complaint_number && (
                         <div style={{ marginBottom: '8px' }}>
                           <div style={{ fontSize: '12px', color: Colors.outline, marginBottom: '4px' }}>Complaint Number</div>
-                          <div style={{ fontSize: '15px', color: Colors.primary, fontWeight: 600 }}>
+                          <div style={{ fontSize: '14px', color: Colors.primary, fontWeight: 600 }}>
                             {selectedDevice.lost_reports[0].police_complaint_number}
                           </div>
                         </div>
@@ -493,7 +493,7 @@ export function PoliceDevicesPage() {
                       {selectedDevice.lost_reports[0].reward_amount && (
                         <div style={{ marginBottom: '8px' }}>
                           <div style={{ fontSize: '12px', color: Colors.outline, marginBottom: '4px' }}>Reward Amount</div>
-                          <div style={{ fontSize: '15px', color: Colors.secondary, fontWeight: 600 }}>
+                          <div style={{ fontSize: '14px', color: Colors.secondary, fontWeight: 600 }}>
                             ₹{selectedDevice.lost_reports[0].reward_amount.toLocaleString()}
                           </div>
                         </div>
@@ -531,9 +531,9 @@ export function PoliceDevicesPage() {
                           backgroundColor: Colors.secondary,
                           color: Colors.onPrimary,
                           border: 'none',
-                          borderRadius: '12px',
+                          borderRadius: '0px',
                           cursor: 'pointer',
-                          fontSize: '15px',
+                          fontSize: '14px',
                           fontWeight: 600,
                           display: 'flex',
                           alignItems: 'center',

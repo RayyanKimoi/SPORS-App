@@ -39,7 +39,7 @@ export function ReportBugPage() {
     color: Colors.onSurfaceVariant,
     cursor: 'pointer',
     padding: '8px',
-    borderRadius: '8px',
+    borderRadius: '0px',
   }
 
   const titleStyle: CSSProperties = {
@@ -58,21 +58,24 @@ export function ReportBugPage() {
     width: '100%',
     minHeight: '150px',
     padding: '12px 16px',
-    backgroundColor: Colors.surfaceContainerHigh,
-    border: `1px solid ${Colors.outlineVariant}`,
-    borderRadius: '12px',
-    color: Colors.onSurface,
-    fontSize: '16px',
+    backgroundColor: '#fff',
+    border: '1px solid #E5E5E5',
+    color: '#000',
+    fontSize: '14px',
     resize: 'vertical',
-    fontFamily: 'inherit',
+    fontFamily: "'Inter', system-ui, sans-serif",
+    outline: 'none',
   }
 
   const labelStyle: CSSProperties = {
-    fontSize: '14px',
+    fontSize: '11px',
     fontWeight: 500,
-    color: Colors.onSurfaceVariant,
+    color: '#737373',
     marginBottom: '6px',
     display: 'block',
+    textTransform: 'uppercase',
+    letterSpacing: '0.15em',
+    fontFamily: "'JetBrains Mono', monospace",
   }
 
   if (submitted) {

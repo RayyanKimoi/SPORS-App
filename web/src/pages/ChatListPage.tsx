@@ -172,9 +172,9 @@ export function ChatListPage() {
 
   const headerStyle: CSSProperties = {
     marginBottom: '40px',
-    background: `linear-gradient(135deg, ${Colors.primary}10 0%, transparent 100%)`,
+    backgroundColor: '#FAFAFA',
     padding: '32px',
-    borderRadius: '20px',
+    borderRadius: '0px',
     border: `1px solid ${Colors.primary}20`,
   }
 
@@ -209,8 +209,8 @@ export function ChatListPage() {
   const avatarStyle: CSSProperties = {
     width: '64px',
     height: '64px',
-    borderRadius: '16px',
-    background: `linear-gradient(135deg, ${Colors.primary}30 0%, ${Colors.primary}10 100%)`,
+    borderRadius: '0px',
+    backgroundColor: '#F5F5F5',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -222,7 +222,7 @@ export function ChatListPage() {
     textAlign: 'center',
     padding: '80px 40px',
     color: Colors.onSurfaceVariant,
-    background: `linear-gradient(135deg, ${Colors.primary}08 0%, transparent 100%)`,
+    backgroundColor: '#FAFAFA',
   }
 
   if (loading) {
@@ -304,7 +304,7 @@ export function ChatListPage() {
                   <p
                     style={{
                       color: Colors.onSurfaceVariant,
-                      fontSize: '15px',
+                      fontSize: '14px',
                       overflow: 'hidden',
                       textOverflow: 'ellipsis',
                       whiteSpace: 'nowrap',
@@ -321,7 +321,7 @@ export function ChatListPage() {
                         fontSize: '13px',
                         fontWeight: 700,
                         padding: '4px 12px',
-                        borderRadius: '12px',
+                        borderRadius: '0px',
                         minWidth: '24px',
                         textAlign: 'center',
                       }}
@@ -338,7 +338,7 @@ export function ChatListPage() {
                       color: Colors.onSurfaceVariant,
                       backgroundColor: Colors.surfaceContainerHighest,
                       padding: '4px 12px',
-                      borderRadius: '8px',
+                      borderRadius: '0px',
                       textTransform: 'uppercase',
                       letterSpacing: '0.5px',
                     }}
@@ -352,7 +352,7 @@ export function ChatListPage() {
                       color: room.isActive ? Colors.secondary : Colors.error,
                       backgroundColor: room.isActive ? `${Colors.secondary}20` : `${Colors.error}20`,
                       padding: '4px 12px',
-                      borderRadius: '8px',
+                      borderRadius: '0px',
                       border: `2px solid ${room.isActive ? Colors.secondary : Colors.error}40`,
                       textTransform: 'uppercase',
                       letterSpacing: '0.5px',

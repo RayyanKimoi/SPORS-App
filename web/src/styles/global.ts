@@ -18,12 +18,12 @@ export const globalStyles = `
     min-height: 100vh;
   }
 
-  a {
+  .app-layout a {
     color: ${Colors.primary};
     text-decoration: none;
   }
 
-  a:hover {
+  .app-layout a:hover {
     text-decoration: underline;
   }
 
@@ -37,24 +37,23 @@ export const globalStyles = `
   }
 
   ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+    width: 6px;
+    height: 6px;
   }
 
   ::-webkit-scrollbar-track {
-    background: ${Colors.surfaceContainer};
+    background: ${Colors.background};
   }
 
   ::-webkit-scrollbar-thumb {
-    background: ${Colors.outline};
-    border-radius: 4px;
+    background: #D4D4D4;
+    border-radius: 3px;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: ${Colors.onSurfaceVariant};
+    background: #A3A3A3;
   }
 
-  /* Fix autofill styling for better appearance */
   input:-webkit-autofill,
   input:-webkit-autofill:hover,
   input:-webkit-autofill:focus,
@@ -62,21 +61,27 @@ export const globalStyles = `
     -webkit-background-clip: text;
     -webkit-text-fill-color: ${Colors.onSurface} !important;
     transition: background-color 5000s ease-in-out 0s;
-    box-shadow: inset 0 0 20px 20px ${Colors.surfaceContainerHigh};
+    box-shadow: inset 0 0 20px 20px #fff;
   }
 
-  /* Focus state for input wrapper */
   .input-wrapper:focus-within {
-    border-color: ${Colors.primary} !important;
+    border-color: #000 !important;
   }
 
-  /* Placeholder styling */
   input::placeholder {
-    color: ${Colors.outline};
-    opacity: 0.7;
+    color: #A3A3A3;
+    opacity: 0.8;
   }
 
   input:focus::placeholder {
     opacity: 0.5;
+  }
+
+  /* Grid background for app layout */
+  .app-layout main {
+    background-image:
+      linear-gradient(rgba(0, 0, 0, 0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0, 0, 0, 0.04) 1px, transparent 1px);
+    background-size: 50px 50px;
   }
 `

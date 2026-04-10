@@ -165,7 +165,7 @@ export function PoliceAnalyticsPage() {
   const barStyle = (value: number, maxValue: number, color: string): CSSProperties => ({
     height: '32px',
     backgroundColor: `${color}30`,
-    borderRadius: '6px',
+    borderRadius: '0px',
     display: 'flex',
     alignItems: 'center',
     marginBottom: '12px',
@@ -206,7 +206,7 @@ export function PoliceAnalyticsPage() {
           </span>
           Analytics & Insights
         </h1>
-        <p style={{ fontSize: '15px', color: Colors.onSurfaceVariant }}>
+        <p style={{ fontSize: '14px', color: Colors.onSurfaceVariant }}>
           Statistical analysis and trends
         </p>
       </div>
@@ -357,7 +357,7 @@ export function PoliceAnalyticsPage() {
                 style={{
                   padding: '14px',
                   backgroundColor: Colors.surfaceContainerHigh,
-                  borderRadius: '10px',
+                  borderRadius: '0px',
                   marginBottom: '10px',
                   display: 'flex',
                   justifyContent: 'space-between',

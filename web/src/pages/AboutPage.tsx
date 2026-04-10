@@ -25,7 +25,7 @@ export function AboutPage() {
     color: Colors.onSurfaceVariant,
     cursor: 'pointer',
     padding: '8px',
-    borderRadius: '8px',
+    borderRadius: '0px',
   }
 
   const titleStyle: CSSProperties = {
@@ -58,7 +58,7 @@ export function AboutPage() {
 
   const textStyle: CSSProperties = {
     color: Colors.onSurfaceVariant,
-    fontSize: '15px',
+    fontSize: '14px',
     lineHeight: 1.6,
   }
 
