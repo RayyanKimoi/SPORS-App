@@ -179,6 +179,8 @@ export function WireframeMesh({ variant = 'dark' }: WireframeMeshProps) {
     }
 
     const animate = () => {
+      if (!isVisible) return
+
       ctx.clearRect(0, 0, width, height)
       // Transparent background — the parent element controls the bg color
       time += 0.016
@@ -190,9 +192,13 @@ export function WireframeMesh({ variant = 'dark' }: WireframeMeshProps) {
       animationRef.current = requestAnimationFrame(animate)
     }
 
+    let isVisible = true
+
     const handleResize = () => {
       width = canvas.offsetWidth
       height = canvas.offsetHeight
+      if (width < 30 || height < 30) return
+
       canvas.width = width * dpr
       canvas.height = height * dpr
       ctx.scale(dpr, dpr)
@@ -200,11 +206,32 @@ export function WireframeMesh({ variant = 'dark' }: WireframeMeshProps) {
       topMesh = createTopPoints()
     }
 
+    const resizeObserver = new ResizeObserver(() => handleResize())
+    resizeObserver.observe(canvas)
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        isVisible = entry.isIntersecting
+        if (isVisible) {
+          cancelAnimationFrame(animationRef.current)
+          animationRef.current = requestAnimationFrame(animate)
+        }
+      },
+      { threshold: 0.1 }
+    )
+    observer.observe(canvas)
+
     window.addEventListener('mousemove', handleMouseMove)
     window.addEventListener('resize', handleResize)
+    
+    // Initial resize to capture proper dimensions
+    setTimeout(handleResize, 100) 
+    
     animate()
 
     return () => {
+      resizeObserver.disconnect()
+      observer.disconnect()
       window.removeEventListener('mousemove', handleMouseMove)
       window.removeEventListener('resize', handleResize)
       cancelAnimationFrame(animationRef.current)

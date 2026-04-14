@@ -182,6 +182,7 @@ body::-webkit-scrollbar {
 
 .magnetic-btn--inverted {
   border-color: #fff;
+  background: transparent;
   color: #fff;
 }
 
