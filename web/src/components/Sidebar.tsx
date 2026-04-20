@@ -1,8 +1,9 @@
 import { CSSProperties, useEffect, useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
+import { useTheme } from '../hooks/ThemeContext'
 import { supabase } from '../lib/supabase'
-import { Shield } from 'lucide-react'
+import { Shield, Sun, Moon } from 'lucide-react'
 
 const navItems = [
   { path: '/dashboard', icon: 'home', label: 'Home' },
@@ -17,23 +18,28 @@ export function Sidebar() {
   const navigate = useNavigate()
   const location = useLocation()
   const { user, profile, signOut } = useAuth()
+  const { theme, isDark, toggleTheme } = useTheme()
   const [unreadCount, setUnreadCount] = useState(0)
 
   const sidebarStyle: CSSProperties = {
     width: '240px',
-    minHeight: '100vh',
-    backgroundColor: '#fff',
-    padding: '24px 16px',
+    height: '100vh',
+    position: 'sticky',
+    top: 0,
+    backgroundColor: theme.bgSurface,
+    padding: '20px 16px',
     display: 'flex',
     flexDirection: 'column',
-    borderRight: '1px solid #E5E5E5',
+    borderRight: `1px solid ${theme.border}`,
+    transition: 'background-color 0.3s ease, border-color 0.3s ease',
+    overflow: 'hidden',
   }
 
   const logoStyle: CSSProperties = {
     display: 'flex',
     alignItems: 'center',
     gap: '10px',
-    marginBottom: '48px',
+    marginBottom: '24px',
     padding: '0 12px',
   }
 
@@ -50,8 +56,8 @@ export function Sidebar() {
     gap: '12px',
     padding: '10px 12px',
     borderRadius: '0px',
-    backgroundColor: isActive ? '#000' : 'transparent',
-    color: isActive ? '#fff' : '#737373',
+    backgroundColor: isActive ? theme.primary : 'transparent',
+    color: isActive ? theme.textInverse : theme.textSecondary,
     cursor: 'pointer',
     transition: 'all 0.2s cubic-bezier(0.33, 1, 0.68, 1)',
     fontSize: '13px',
@@ -125,14 +131,14 @@ export function Sidebar() {
     <aside style={sidebarStyle}>
       {/* Logo */}
       <div style={logoStyle}>
-        <Shield size={20} strokeWidth={1.5} color="#000" />
+        <Shield size={20} strokeWidth={1.5} color={theme.text} />
         <span
           style={{
             fontFamily: "'Space Grotesk', system-ui, sans-serif",
             fontWeight: 600,
             fontSize: '16px',
             letterSpacing: '0.15em',
-            color: '#000',
+            color: theme.text,
           }}
         >
           SPORS
@@ -146,7 +152,7 @@ export function Sidebar() {
           fontFamily: "'JetBrains Mono', monospace",
           fontSize: '10px',
           letterSpacing: '0.2em',
-          color: '#A3A3A3',
+          color: theme.textTertiary,
           textTransform: 'uppercase',
           padding: '0 12px',
           marginBottom: '12px',
@@ -164,15 +170,15 @@ export function Sidebar() {
             onMouseEnter={(e) => {
               const isActive = location.pathname === item.path || location.pathname.startsWith(item.path + '/')
               if (!isActive) {
-                e.currentTarget.style.backgroundColor = '#F5F5F5'
-                e.currentTarget.style.color = '#000'
+                e.currentTarget.style.backgroundColor = theme.bgSurfaceHover
+                e.currentTarget.style.color = theme.text
               }
             }}
             onMouseLeave={(e) => {
               const isActive = location.pathname === item.path || location.pathname.startsWith(item.path + '/')
               if (!isActive) {
                 e.currentTarget.style.backgroundColor = 'transparent'
-                e.currentTarget.style.color = '#737373'
+                e.currentTarget.style.color = theme.textSecondary
               }
             }}
           >
@@ -184,8 +190,8 @@ export function Sidebar() {
               <span
                 style={{
                   marginLeft: 'auto',
-                  backgroundColor: '#000',
-                  color: '#fff',
+                  backgroundColor: theme.badgeBg,
+                  color: theme.badgeText,
                   fontSize: '10px',
                   fontWeight: 600,
                   padding: '2px 6px',
@@ -202,8 +208,31 @@ export function Sidebar() {
         ))}
       </nav>
 
+      {/* Theme toggle */}
+      <div style={{ padding: '0 12px', marginBottom: '16px' }}>
+        <div
+          onClick={toggleTheme}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '12px',
+            padding: '10px 0',
+            cursor: 'pointer',
+            color: theme.textSecondary,
+            fontSize: '13px',
+            fontFamily: "'Inter', system-ui, sans-serif",
+            transition: 'color 0.2s ease',
+          }}
+          onMouseEnter={(e) => { e.currentTarget.style.color = theme.text }}
+          onMouseLeave={(e) => { e.currentTarget.style.color = theme.textSecondary }}
+        >
+          {isDark ? <Sun size={18} strokeWidth={1.5} /> : <Moon size={18} strokeWidth={1.5} />}
+          <span>{isDark ? 'Light Mode' : 'Dark Mode'}</span>
+        </div>
+      </div>
+
       {/* Bottom profile section */}
-      <div style={{ borderTop: '1px solid #E5E5E5', paddingTop: '16px', marginTop: '16px' }}>
+      <div style={{ borderTop: `1px solid ${theme.border}`, paddingTop: '16px' }}>
         <div
           style={{
             display: 'flex',
@@ -218,11 +247,11 @@ export function Sidebar() {
               width: '36px',
               height: '36px',
               borderRadius: '0px',
-              backgroundColor: '#000',
+              backgroundColor: theme.primary,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              color: '#fff',
+              color: theme.textInverse,
               fontWeight: 600,
               fontSize: '13px',
               fontFamily: "'JetBrains Mono', monospace",
@@ -231,10 +260,10 @@ export function Sidebar() {
             {initials}
           </div>
           <div>
-            <div style={{ fontWeight: 500, color: '#000', fontSize: '13px' }}>
+            <div style={{ fontWeight: 500, color: theme.text, fontSize: '13px' }}>
               {profile?.full_name || 'SPORS User'}
             </div>
-            <div style={{ fontSize: '11px', color: '#A3A3A3', fontFamily: "'JetBrains Mono', monospace" }}>
+            <div style={{ fontSize: '11px', color: theme.textTertiary, fontFamily: "'JetBrains Mono', monospace" }}>
               {profile?.role === 'police' ? 'Officer' : 'User'}
             </div>
           </div>
@@ -242,11 +271,14 @@ export function Sidebar() {
         <div
           style={{
             ...navItemStyle(false),
-            color: '#FF4E4E',
+            color: theme.error,
           }}
-          onClick={signOut}
+          onClick={async () => {
+            await signOut()
+            window.location.href = '/login'
+          }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = '#FFF0F0'
+            e.currentTarget.style.backgroundColor = theme.errorBg
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.backgroundColor = 'transparent'

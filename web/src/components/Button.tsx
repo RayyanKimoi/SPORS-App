@@ -1,4 +1,5 @@
 import { CSSProperties } from 'react'
+import { useTheme } from '../hooks/ThemeContext'
 
 type ButtonProps = {
   children: React.ReactNode
@@ -25,6 +26,8 @@ export function Button({
   style,
   icon,
 }: ButtonProps) {
+  const { theme } = useTheme()
+
   const baseStyle: CSSProperties = {
     display: 'inline-flex',
     alignItems: 'center',
@@ -41,6 +44,8 @@ export function Button({
     letterSpacing: '0.05em',
     textTransform: 'uppercase' as const,
     fontSize: '13px',
+    position: 'relative',
+    overflow: 'hidden',
   }
 
   const sizeStyles: Record<string, CSSProperties> = {
@@ -49,40 +54,40 @@ export function Button({
     large: { padding: '16px 40px', fontSize: '14px' },
   }
 
+  // Primary is now outline-style (transparent bg, border) with fill-on-hover
   const variantStyles: Record<string, CSSProperties> = {
     primary: {
-      backgroundColor: '#000',
-      color: '#fff',
-      border: '1.5px solid #000',
+      backgroundColor: 'transparent',
+      color: theme.text,
+      border: `1.5px solid ${theme.text}`,
     },
     secondary: {
-      backgroundColor: '#F5F5F5',
-      color: '#000',
-      border: '1.5px solid #E5E5E5',
+      backgroundColor: theme.bgSurfaceDim,
+      color: theme.text,
+      border: `1.5px solid ${theme.border}`,
     },
     outline: {
       backgroundColor: 'transparent',
-      color: '#000',
-      border: '1.5px solid #000',
+      color: theme.text,
+      border: `1.5px solid ${theme.text}`,
     },
     danger: {
-      backgroundColor: '#FF4E4E',
-      color: '#fff',
-      border: '1.5px solid #FF4E4E',
+      backgroundColor: 'transparent',
+      color: theme.error,
+      border: `1.5px solid ${theme.error}`,
     },
     ghost: {
       backgroundColor: 'transparent',
-      color: '#000',
+      color: theme.text,
       border: '1.5px solid transparent',
     },
   }
 
-  // Build CSS class for slide-fill animation
-  const variantClass = variant === 'outline' ? 'app-btn app-btn--outline'
-    : variant === 'danger' ? 'app-btn app-btn--danger'
+  // All actionable variants get the slide-fill animation
+  const variantClass = variant === 'danger' ? 'app-btn app-btn--danger'
     : variant === 'secondary' ? 'app-btn app-btn--secondary'
     : variant === 'ghost' ? ''
-    : 'app-btn'
+    : 'app-btn app-btn--outline'
 
   return (
     <button

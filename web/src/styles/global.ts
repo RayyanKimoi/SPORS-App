@@ -1,5 +1,3 @@
-import { Colors } from '../lib/colors'
-
 export const globalStyles = `
   * {
     margin: 0;
@@ -9,8 +7,6 @@ export const globalStyles = `
 
   body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background-color: ${Colors.background};
-    color: ${Colors.onSurface};
     min-height: 100vh;
   }
 
@@ -19,7 +15,6 @@ export const globalStyles = `
   }
 
   .app-layout a {
-    color: ${Colors.primary};
     text-decoration: none;
   }
 
@@ -42,7 +37,7 @@ export const globalStyles = `
   }
 
   ::-webkit-scrollbar-track {
-    background: ${Colors.background};
+    background: transparent;
   }
 
   ::-webkit-scrollbar-thumb {
@@ -54,18 +49,38 @@ export const globalStyles = `
     background: #A3A3A3;
   }
 
+  /* Dark mode scrollbar */
+  .app-layout.dark ::-webkit-scrollbar-thumb {
+    background: #333;
+  }
+  .app-layout.dark ::-webkit-scrollbar-thumb:hover {
+    background: #555;
+  }
+
   input:-webkit-autofill,
   input:-webkit-autofill:hover,
   input:-webkit-autofill:focus,
   input:-webkit-autofill:active {
     -webkit-background-clip: text;
-    -webkit-text-fill-color: ${Colors.onSurface} !important;
     transition: background-color 5000s ease-in-out 0s;
+  }
+
+  .app-layout:not(.dark) input:-webkit-autofill {
+    -webkit-text-fill-color: #000 !important;
     box-shadow: inset 0 0 20px 20px #fff;
+  }
+
+  .app-layout.dark input:-webkit-autofill {
+    -webkit-text-fill-color: #F0F0F0 !important;
+    box-shadow: inset 0 0 20px 20px #141414;
   }
 
   .input-wrapper:focus-within {
     border-color: #000 !important;
+  }
+
+  .app-layout.dark .input-wrapper:focus-within {
+    border-color: #fff !important;
   }
 
   input::placeholder {
@@ -82,6 +97,13 @@ export const globalStyles = `
     background-image:
       linear-gradient(rgba(0, 0, 0, 0.04) 1px, transparent 1px),
       linear-gradient(90deg, rgba(0, 0, 0, 0.04) 1px, transparent 1px);
+    background-size: 50px 50px;
+  }
+
+  .app-layout.dark main {
+    background-image:
+      linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
     background-size: 50px 50px;
   }
 `

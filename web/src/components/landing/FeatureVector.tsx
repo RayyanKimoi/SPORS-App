@@ -11,16 +11,17 @@ export function FeatureVector({ id, isActive }: FeatureVectorProps) {
   const center = 200
   const radius = 140
 
-  // Standard animation for all Orbs "coming out" after a pause
+  // Smooth entrance — syncs with the panel pull-out timing
   const containerVariants = {
-    hidden: { opacity: 0, scale: 0.92 },
+    hidden: { opacity: 0, scale: 0.88, y: 15 },
     visible: { 
       opacity: 1, 
       scale: 1,
+      y: 0,
       transition: { 
-        delay: 0.5, // The 0.5s "pause" requested by the user
-        duration: 0.8,
-        ease: "easeOut" 
+        delay: 0.3,
+        duration: 1.0,
+        ease: [0.25, 0.1, 0.25, 1],
       }
     }
   }

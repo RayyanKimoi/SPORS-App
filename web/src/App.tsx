@@ -1,9 +1,11 @@
 import { CSSProperties } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from './hooks/useAuth'
+import { ThemeProvider, useTheme } from './hooks/ThemeContext'
 import { globalStyles } from './styles/global'
 import { Sidebar } from './components/Sidebar'
 import { PoliceSidebar } from './components/police/PoliceSidebar'
+import { CustomCursor } from './components/landing/CustomCursor'
 import { LandingPage } from './pages/LandingPage'
 import { LoginPage } from './pages/LoginPage'
 import { HomePage } from './pages/HomePage'
@@ -25,6 +27,7 @@ import { PoliceAnalyticsPage } from './pages/police/PoliceAnalyticsPage'
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth()
+  const { theme } = useTheme()
 
   if (loading) {
     return (
@@ -34,18 +37,15 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          backgroundColor: '#FAFAFA',
-          backgroundImage:
-            'linear-gradient(rgba(0,0,0,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.04) 1px, transparent 1px)',
-          backgroundSize: '50px 50px',
+          backgroundColor: theme.bg,
         }}
       >
         <div style={{ textAlign: 'center' }}>
           <div style={{
             width: '24px',
             height: '24px',
-            border: '2px solid #E5E5E5',
-            borderTopColor: '#000',
+            border: `2px solid ${theme.border}`,
+            borderTopColor: theme.text,
             borderRadius: '50%',
             animation: 'spin 0.8s linear infinite',
             margin: '0 auto',
@@ -55,7 +55,7 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
             fontFamily: "'JetBrains Mono', monospace",
             fontSize: '11px',
             letterSpacing: '0.2em',
-            color: '#A3A3A3',
+            color: theme.textTertiary,
             textTransform: 'uppercase',
           }}>
             Loading...
@@ -73,19 +73,25 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
 }
 
 function AppLayout({ children, isPolice }: { children: React.ReactNode; isPolice?: boolean }) {
+  const { theme, isDark } = useTheme()
+
   const layoutStyle: CSSProperties = {
     display: 'flex',
-    minHeight: '100vh',
+    height: '100vh',
+    overflow: 'hidden',
   }
 
   const mainStyle: CSSProperties = {
     flex: 1,
-    overflow: 'auto',
-    backgroundColor: '#FAFAFA',
+    overflowY: 'auto',
+    height: '100vh',
+    backgroundColor: theme.bg,
+    transition: 'background-color 0.3s ease',
   }
 
   return (
-    <div className="app-layout" style={layoutStyle}>
+    <div className={`app-layout custom-cursor-area ${isDark ? 'dark' : ''}`} style={layoutStyle}>
+      <CustomCursor />
       {isPolice ? <PoliceSidebar /> : <Sidebar />}
       <main style={mainStyle}>{children}</main>
     </div>
@@ -94,6 +100,7 @@ function AppLayout({ children, isPolice }: { children: React.ReactNode; isPolice
 
 function AppRoutes() {
   const { user, loading } = useAuth()
+  const { theme } = useTheme()
 
   if (loading) {
     return (
@@ -103,18 +110,15 @@ function AppRoutes() {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          backgroundColor: '#FAFAFA',
-          backgroundImage:
-            'linear-gradient(rgba(0,0,0,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(0,0,0,0.04) 1px, transparent 1px)',
-          backgroundSize: '50px 50px',
+          backgroundColor: theme.bg,
         }}
       >
         <div style={{ textAlign: 'center' }}>
           <div style={{
             width: '24px',
             height: '24px',
-            border: '2px solid #E5E5E5',
-            borderTopColor: '#000',
+            border: `2px solid ${theme.border}`,
+            borderTopColor: theme.text,
             borderRadius: '50%',
             animation: 'spin 0.8s linear infinite',
             margin: '0 auto',
@@ -124,7 +128,7 @@ function AppRoutes() {
             fontFamily: "'JetBrains Mono', monospace",
             fontSize: '11px',
             letterSpacing: '0.2em',
-            color: '#A3A3A3',
+            color: theme.textTertiary,
             textTransform: 'uppercase',
           }}>
             Initializing...
@@ -178,7 +182,9 @@ export default function App() {
       `}</style>
       <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <AuthProvider>
-          <AppRoutes />
+          <ThemeProvider>
+            <AppRoutes />
+          </ThemeProvider>
         </AuthProvider>
       </BrowserRouter>
     </>

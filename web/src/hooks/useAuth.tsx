@@ -129,10 +129,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   const signOut = async () => {
-    await supabase.auth.signOut()
-    setUser(null)
-    setProfile(null)
-    setSession(null)
+    try {
+      console.log('AuthContext: Signing out...')
+      await supabase.auth.signOut()
+    } catch (error) {
+      console.error('AuthContext: Error during signOut:', error)
+    } finally {
+      setUser(null)
+      setProfile(null)
+      setSession(null)
+      // Extra safety to clear any residual data
+      localStorage.removeItem('supabase.auth.token')
+      localStorage.removeItem('sb-' + import.meta.env.VITE_SUPABASE_URL + '-auth-token')
+    }
   }
 
   return (
