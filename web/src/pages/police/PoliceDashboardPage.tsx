@@ -109,7 +109,7 @@ export function PoliceDashboardPage() {
 
   if (loading) {
     return (
-      <div style={{ padding: '32px', maxWidth: '1600px', margin: '0 auto', textAlign: 'center', paddingTop: '120px' }}>
+      <div style={{ padding: '120px 32px 32px', maxWidth: '1600px', margin: '0 auto', textAlign: 'center' }}>
         <div style={{ width: '24px', height: '24px', border: `2px solid ${theme.border}`, borderTopColor: theme.text, borderRadius: '50%', animation: 'spin 0.8s linear infinite', margin: '0 auto 16px' }} />
         <p style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '11px', color: theme.textTertiary, letterSpacing: '0.2em', textTransform: 'uppercase' }}>Loading dashboard...</p>
       </div>

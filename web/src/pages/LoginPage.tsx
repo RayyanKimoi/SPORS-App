@@ -1,6 +1,7 @@
 import { CSSProperties, useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
+import { useTheme } from '../hooks/ThemeContext'
 import { supabase } from '../lib/supabase'
 import { Button } from '../components/Button'
 import { Input } from '../components/Input'
@@ -11,6 +12,7 @@ import { InteractiveGrid } from '../components/landing/InteractiveGrid'
 
 export function LoginPage() {
   const navigate = useNavigate()
+  const { theme, isDark } = useTheme()
   const { signIn, signUp } = useAuth()
   const [isSignUp, setIsSignUp] = useState(false)
   const [isPoliceLogin, setIsPoliceLogin] = useState(false)
@@ -101,19 +103,21 @@ export function LoginPage() {
     alignItems: 'center',
     justifyContent: 'center',
     padding: '20px',
-    backgroundColor: '#FAFAFA',
+    backgroundColor: theme.bg,
     position: 'relative',
     overflow: 'hidden',
+    transition: 'background-color 0.3s ease',
   }
 
   const cardStyle: CSSProperties = {
     width: '100%',
     maxWidth: '420px',
-    backgroundColor: '#fff',
-    border: '1px solid #E5E5E5',
+    backgroundColor: theme.bgSurface,
+    border: `1px solid ${theme.border}`,
     padding: '48px 40px',
     position: 'relative',
     zIndex: 5,
+    transition: 'background-color 0.3s ease, border-color 0.3s ease',
   }
 
   return (
@@ -123,7 +127,7 @@ export function LoginPage() {
 
       {/* Wireframe mesh background — same as landing page */}
       <div style={{ position: 'absolute', inset: 0, zIndex: 0 }}>
-        <WireframeMesh variant="dark" />
+        <WireframeMesh variant={isDark ? "light" : "dark"} />
       </div>
 
       {/* Interactive grid — cells darken on cursor hover */}
@@ -132,24 +136,24 @@ export function LoginPage() {
       {/* Decorative pixel block — top right */}
       <div style={{ position: 'absolute', top: '48px', right: '48px', display: 'flex', gap: '3px', flexWrap: 'wrap', width: '85px', opacity: 0.4, zIndex: 2 }}>
         {[1,0,1,1,0, 1,1,0,1,0, 0,1,1,0,1, 1,0,0,1,1, 0,1,1,1,0].map((f, i) => (
-          <div key={i} style={{ width: '12px', height: '12px', backgroundColor: f ? '#000' : 'transparent', border: '1px solid #E5E5E5' }} />
+          <div key={i} style={{ width: '12px', height: '12px', backgroundColor: f ? theme.text : 'transparent', border: `1px solid ${theme.border}` }} />
         ))}
       </div>
 
       {/* Decorative barcode — bottom left */}
       <div style={{ position: 'absolute', bottom: '48px', left: '48px', display: 'flex', gap: '2px', alignItems: 'flex-end', height: '60px', opacity: 0.3, zIndex: 2 }}>
         {Array.from({ length: 16 }, (_, i) => 15 + Math.sin(i * 0.6) * 25 + Math.cos(i * 0.3) * 12).map((h, i) => (
-          <div key={i} style={{ width: '2.5px', height: `${h}px`, backgroundColor: '#000' }} />
+          <div key={i} style={{ width: '2.5px', height: `${h}px`, backgroundColor: theme.text }} />
         ))}
       </div>
 
       {/* Crosshair — bottom right */}
       <svg width="44" height="44" viewBox="0 0 44 44" fill="none" style={{ position: 'absolute', bottom: '48px', right: '48px', zIndex: 2, opacity: 0.15 }}>
-        <line x1="22" y1="0" x2="22" y2="15" stroke="#000" strokeWidth="1" />
-        <line x1="22" y1="29" x2="22" y2="44" stroke="#000" strokeWidth="1" />
-        <line x1="0" y1="22" x2="15" y2="22" stroke="#000" strokeWidth="1" />
-        <line x1="29" y1="22" x2="44" y2="22" stroke="#000" strokeWidth="1" />
-        <circle cx="22" cy="22" r="8" stroke="#000" strokeWidth="1" fill="none" />
+        <line x1="22" y1="0" x2="22" y2="15" stroke={theme.text} strokeWidth="1" />
+        <line x1="22" y1="29" x2="22" y2="44" stroke={theme.text} strokeWidth="1" />
+        <line x1="0" y1="22" x2="15" y2="22" stroke={theme.text} strokeWidth="1" />
+        <line x1="29" y1="22" x2="44" y2="22" stroke={theme.text} strokeWidth="1" />
+        <circle cx="22" cy="22" r="8" stroke={theme.text} strokeWidth="1" fill="none" />
       </svg>
 
       {/* Back button — top left, spaced away from decorations */}
@@ -164,16 +168,16 @@ export function LoginPage() {
           cursor: 'pointer',
           zIndex: 10,
           padding: '8px 14px',
-          border: '1px solid #E5E5E5',
-          backgroundColor: '#fff',
+          border: `1px solid ${theme.border}`,
+          backgroundColor: theme.bgSurface,
           transition: 'all 0.2s ease',
         }}
         onClick={() => navigate('/')}
-        onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#000' }}
-        onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#E5E5E5' }}
+        onMouseEnter={(e) => { e.currentTarget.style.borderColor = theme.text }}
+        onMouseLeave={(e) => { e.currentTarget.style.borderColor = theme.border }}
       >
-        <ArrowLeft size={14} color="#000" />
-        <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '11px', color: '#000', letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+        <ArrowLeft size={14} color={theme.text} />
+        <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: '11px', color: theme.text, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
           Back
         </span>
       </div>
@@ -181,27 +185,27 @@ export function LoginPage() {
       <div style={cardStyle}>
         {/* Logo */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', marginBottom: '12px' }}>
-          <Shield size={24} strokeWidth={1.5} color="#000" />
-          <span style={{ fontFamily: "'Space Grotesk', system-ui, sans-serif", fontWeight: 700, fontSize: '24px', color: '#000', letterSpacing: '0.1em' }}>
+          <Shield size={24} strokeWidth={1.5} color={theme.text} />
+          <span style={{ fontFamily: "'Space Grotesk', system-ui, sans-serif", fontWeight: 700, fontSize: '24px', color: theme.text, letterSpacing: '0.1em' }}>
             SPORS
           </span>
         </div>
 
         {/* Section label */}
-        <p style={{ textAlign: 'center', fontFamily: "'JetBrains Mono', monospace", fontSize: '11px', color: '#A3A3A3', letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: '36px' }}>
+        <p style={{ textAlign: 'center', fontFamily: "'JetBrains Mono', monospace", fontSize: '11px', color: theme.textTertiary, letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: '36px' }}>
           {isSignUp ? '[ Create Account ]' : isPoliceLogin ? '[ Law Enforcement ]' : '[ Authentication ]'}
         </p>
 
         {/* Civilian / Police toggle */}
         {!isSignUp && (
-          <div style={{ display: 'flex', marginBottom: '28px', border: '1px solid #E5E5E5' }}>
+          <div style={{ display: 'flex', marginBottom: '28px', border: `1px solid ${theme.border}` }}>
             <button
               type="button"
               onClick={() => setIsPoliceLogin(false)}
               style={{
                 flex: 1, padding: '10px', border: 'none',
-                backgroundColor: !isPoliceLogin ? '#000' : '#fff',
-                color: !isPoliceLogin ? '#fff' : '#737373',
+                backgroundColor: !isPoliceLogin ? theme.text : theme.bgSurface,
+                color: !isPoliceLogin ? theme.bgSurface : theme.textSecondary,
                 fontFamily: "'Space Grotesk', system-ui, sans-serif", fontSize: '12px',
                 fontWeight: 500, letterSpacing: '0.1em', textTransform: 'uppercase',
                 cursor: 'pointer', transition: 'all 0.2s ease',
@@ -213,9 +217,9 @@ export function LoginPage() {
               type="button"
               onClick={() => setIsPoliceLogin(true)}
               style={{
-                flex: 1, padding: '10px', border: 'none', borderLeft: '1px solid #E5E5E5',
-                backgroundColor: isPoliceLogin ? '#000' : '#fff',
-                color: isPoliceLogin ? '#fff' : '#737373',
+                flex: 1, padding: '10px', border: 'none', borderLeft: `1px solid ${theme.border}`,
+                backgroundColor: isPoliceLogin ? theme.text : theme.bgSurface,
+                color: isPoliceLogin ? theme.bgSurface : theme.textSecondary,
                 fontFamily: "'Space Grotesk', system-ui, sans-serif", fontSize: '12px',
                 fontWeight: 500, letterSpacing: '0.1em', textTransform: 'uppercase',
                 cursor: 'pointer', transition: 'all 0.2s ease',
@@ -228,7 +232,7 @@ export function LoginPage() {
 
         {/* Error */}
         {error && (
-          <div style={{ backgroundColor: '#FFF0F0', color: '#FF4E4E', padding: '10px 14px', marginBottom: '20px', fontSize: '13px', fontFamily: "'JetBrains Mono', monospace", border: '1px solid #FFE0E0' }}>
+          <div style={{ backgroundColor: theme.errorBg, color: theme.error, padding: '10px 14px', marginBottom: '20px', fontSize: '13px', fontFamily: "'JetBrains Mono', monospace", border: `1px solid ${theme.error}` }}>
             {error}
           </div>
         )}
@@ -279,7 +283,7 @@ export function LoginPage() {
         </form>
 
         {/* Toggle */}
-        <p style={{ textAlign: 'center', marginTop: '28px', color: '#737373', fontSize: '13px' }}>
+        <p style={{ textAlign: 'center', marginTop: '28px', color: theme.textSecondary, fontSize: '13px' }}>
           {isSignUp ? 'Already have an account? ' : "Don't have an account? "}
           <a
             href="#"
@@ -288,7 +292,7 @@ export function LoginPage() {
               setIsSignUp(!isSignUp)
               setError('')
             }}
-            style={{ color: '#000', fontWeight: 600, textDecoration: 'none', borderBottom: '1px solid #000' }}
+            style={{ color: theme.text, fontWeight: 600, textDecoration: 'none', borderBottom: `1px solid ${theme.text}` }}
           >
             {isSignUp ? 'Sign In' : 'Sign Up'}
           </a>

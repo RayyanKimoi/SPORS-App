@@ -201,6 +201,7 @@ export function FeatureVector({ id, isActive }: FeatureVectorProps) {
                 stroke="#000"
                 strokeWidth="1"
                 strokeOpacity="0.06"
+                initial={{ rx: radius, ry: radius }}
                 animate={{ rx: [radius, 2, radius] }}
                 transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: rot / 45 }}
                 style={{ transform: `rotate(${rot}deg)`, transformOrigin: 'center' }}
@@ -221,7 +222,7 @@ export function FeatureVector({ id, isActive }: FeatureVectorProps) {
                     r="3"
                     fill="#000"
                     fillOpacity="0.2"
-                    animate={{ rx: [radius, 0, radius] }} // Sync with path if possible, but simple dot for now
+                    animate={{ r: [3, 5, 3] }} // Fixed: circle uses 'r', not 'rx'
                     style={{ transform: `rotate(${rot}deg)`, transformOrigin: `${center}px ${center}px` }}
                   />
                </motion.g>

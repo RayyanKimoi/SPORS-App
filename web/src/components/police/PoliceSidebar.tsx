@@ -97,9 +97,15 @@ export function PoliceSidebar() {
             : location.pathname.startsWith(item.path)
 
           return (
-            <div
+            <button
               key={item.path}
-              style={navItemStyle(isActive)}
+              style={{
+                ...navItemStyle(isActive),
+                border: 'none',
+                width: '100%',
+                textAlign: 'left',
+                backgroundColor: isActive ? theme.primary : 'transparent',
+              }}
               onClick={() => navigate(item.path)}
               onMouseEnter={(e) => {
                 if (!isActive) {
@@ -130,14 +136,14 @@ export function PoliceSidebar() {
                   {activeChatsCount}
                 </span>
               )}
-            </div>
+            </button>
           )
         })}
       </nav>
 
       {/* Theme toggle */}
       <div style={{ padding: '0 12px', marginBottom: '16px' }}>
-        <div
+        <button
           onClick={toggleTheme}
           style={{
             display: 'flex',
@@ -149,13 +155,18 @@ export function PoliceSidebar() {
             fontSize: '13px',
             fontFamily: "'Inter', system-ui, sans-serif",
             transition: 'color 0.2s ease',
+            backgroundColor: 'transparent',
+            border: 'none',
+            outline: 'none',
+            width: '100%',
+            textAlign: 'left',
           }}
           onMouseEnter={(e) => { e.currentTarget.style.color = theme.text }}
           onMouseLeave={(e) => { e.currentTarget.style.color = theme.textSecondary }}
         >
           {isDark ? <Sun size={18} strokeWidth={1.5} /> : <Moon size={18} strokeWidth={1.5} />}
           <span>{isDark ? 'Light Mode' : 'Dark Mode'}</span>
-        </div>
+        </button>
       </div>
 
       {/* Profile */}
@@ -178,9 +189,17 @@ export function PoliceSidebar() {
             </div>
           </div>
         </div>
-        <div
-          style={{ ...navItemStyle(false), color: theme.error }}
-          onClick={async () => {
+        <button
+          style={{
+            ...navItemStyle(false),
+            color: theme.error,
+            border: 'none',
+            width: '100%',
+            textAlign: 'left',
+            backgroundColor: 'transparent',
+          }}
+          onClick={async (e) => {
+            e.preventDefault()
             await signOut()
             window.location.href = '/login'
           }}
@@ -189,7 +208,7 @@ export function PoliceSidebar() {
         >
           <span className="material-icons" style={{ fontSize: '20px' }}>logout</span>
           Sign Out
-        </div>
+        </button>
       </div>
     </aside>
   )

@@ -163,9 +163,14 @@ export function Sidebar() {
 
       <nav style={navStyle}>
         {navItems.map((item) => (
-          <div
+          <button
             key={item.path}
-            style={navItemStyle(location.pathname === item.path || location.pathname.startsWith(item.path + '/'))}
+            style={{
+              ...navItemStyle(location.pathname === item.path || location.pathname.startsWith(item.path + '/')),
+              border: 'none',
+              width: '100%',
+              textAlign: 'left',
+            }}
             onClick={() => navigate(item.path)}
             onMouseEnter={(e) => {
               const isActive = location.pathname === item.path || location.pathname.startsWith(item.path + '/')
@@ -204,13 +209,13 @@ export function Sidebar() {
                 {unreadCount > 99 ? '99+' : unreadCount}
               </span>
             )}
-          </div>
+          </button>
         ))}
       </nav>
 
       {/* Theme toggle */}
       <div style={{ padding: '0 12px', marginBottom: '16px' }}>
-        <div
+        <button
           onClick={toggleTheme}
           style={{
             display: 'flex',
@@ -222,13 +227,18 @@ export function Sidebar() {
             fontSize: '13px',
             fontFamily: "'Inter', system-ui, sans-serif",
             transition: 'color 0.2s ease',
+            backgroundColor: 'transparent',
+            border: 'none',
+            outline: 'none',
+            width: '100%',
+            textAlign: 'left',
           }}
           onMouseEnter={(e) => { e.currentTarget.style.color = theme.text }}
           onMouseLeave={(e) => { e.currentTarget.style.color = theme.textSecondary }}
         >
           {isDark ? <Sun size={18} strokeWidth={1.5} /> : <Moon size={18} strokeWidth={1.5} />}
           <span>{isDark ? 'Light Mode' : 'Dark Mode'}</span>
-        </div>
+        </button>
       </div>
 
       {/* Bottom profile section */}
@@ -268,12 +278,16 @@ export function Sidebar() {
             </div>
           </div>
         </div>
-        <div
+        <button
           style={{
             ...navItemStyle(false),
             color: theme.error,
+            border: 'none',
+            width: '100%',
+            textAlign: 'left',
           }}
-          onClick={async () => {
+          onClick={async (e) => {
+            e.preventDefault()
             await signOut()
             window.location.href = '/login'
           }}
@@ -288,7 +302,7 @@ export function Sidebar() {
             logout
           </span>
           Sign Out
-        </div>
+        </button>
       </div>
     </aside>
   )
